@@ -1,0 +1,39 @@
+@layer layout {
+  .site-shell {
+    display: flex;
+    min-block-size: 100vh;
+    flex-direction: column;
+  }
+
+  .site-main {
+    flex: 1;
+    padding-block: var(--space-8);
+  }
+
+  .container {
+    inline-size: min(
+      100% - (2 * var(--gutter)),
+      var(--container-width, var(--w-content))
+    );
+    margin-inline: auto;
+  }
+
+  .flow > * + * {
+    margin-block-start: var(--flow-space, var(--space-5));
+  }
+
+  .reading-measure {
+    --container-width: var(--w-reading);
+  }
+
+  .placeholder-page {
+    display: grid;
+    gap: var(--space-6);
+    padding-block: var(--space-8);
+  }
+
+  .placeholder-page__rule {
+    inline-size: min(11rem, 50vw);
+    border-block-start: 2px solid var(--orange);
+  }
+}

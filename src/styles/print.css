@@ -1,0 +1,24 @@
+@layer print {
+  @media print {
+    @page {
+      margin: 20mm;
+    }
+
+    body {
+      background: #fff;
+      color: #000;
+      font-size: 11pt;
+    }
+
+    .site-header,
+    .site-footer,
+    .skip-link {
+      display: none !important;
+    }
+
+    a {
+      color: #000;
+      text-decoration: underline;
+    }
+  }
+}
