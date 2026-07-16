@@ -1,0 +1,113 @@
+---
+import Container from './Container.astro';
+import MobileMenu from './MobileMenu.astro';
+import Wordmark from './Wordmark.astro';
+import { PRIMARY_NAV_LINKS } from '../lib/shell';
+---
+
+<header class="site-header">
+  <Container class="site-header__inner" width="full">
+    <Wordmark />
+    <nav class="site-header__nav" aria-label="Primary">
+      {
+        PRIMARY_NAV_LINKS.map((link) => (
+          <a class="site-header__nav-link" href={link.href}>
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+    <div class="site-header__actions">
+      <a
+        class="site-header__search"
+        href="/search"
+        aria-label="Search The Starkonium Times"
+      >
+        Search
+        <span aria-hidden="true">⌕</span>
+      </a>
+      <a class="site-header__now" href="/now">
+        <span aria-hidden="true" class="site-header__now-mark"></span>
+        Now
+      </a>
+      <MobileMenu />
+    </div>
+  </Container>
+</header>
+
+<style>
+  .site-header {
+    background: color-mix(in srgb, var(--paper) 96%, transparent);
+    border-block-end: 1px solid var(--rule);
+    inset-block-start: 0;
+    min-block-size: var(--header-block-size);
+    position: sticky;
+    z-index: 20;
+  }
+
+  .site-header__inner {
+    align-items: center;
+    display: flex;
+    gap: var(--space-5);
+    min-block-size: var(--header-block-size);
+  }
+
+  .site-header__nav {
+    display: none;
+    gap: var(--space-5);
+    margin-inline-start: auto;
+  }
+
+  .site-header__nav-link,
+  .site-header__search,
+  .site-header__now {
+    color: var(--ink-700);
+    font-family: var(--font-interface);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .site-header__nav-link:hover,
+  .site-header__search:hover,
+  .site-header__now:hover {
+    color: var(--ink-900);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+  }
+
+  .site-header__actions {
+    align-items: center;
+    display: flex;
+    gap: var(--space-4);
+    margin-inline-start: auto;
+  }
+
+  .site-header__search {
+    align-items: center;
+    display: inline-flex;
+    gap: var(--space-1);
+  }
+
+  .site-header__now {
+    align-items: center;
+    display: none;
+    gap: var(--space-2);
+  }
+
+  .site-header__now-mark {
+    background: var(--orange);
+    block-size: 0.5rem;
+    display: inline-block;
+    inline-size: 0.5rem;
+  }
+
+  @media (min-width: 48rem) {
+    .site-header__nav,
+    .site-header__now {
+      display: flex;
+    }
+  }
+</style>

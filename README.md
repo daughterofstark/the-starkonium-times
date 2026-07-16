@@ -6,13 +6,13 @@ public research notebook built from Markdown and MDX in Git.
 
 ## Current status
 
-Phase 0 repository bootstrap only. The repository currently contains one
-minimal smoke page and the tooling needed to install, format, lint, typecheck,
-test, build, and preview it. No final design, collections, site content, search,
-migration, or deployment work has started.
+Phase 1 design tokens and global shell. The repository contains one placeholder
+page that exercises the site shell, global CSS architecture, header, navigation,
+footer, and base layout. No content collections, real homepage content, project
+pages, writing pages, search, migration, or deployment work has started.
 
-The live Blogger site and the `starkonium.com` domain are untouched. Phase 0
-does not modify Blogger, DNS, or any production deployment.
+The live Blogger site and the `starkonium.com` domain are untouched. Current
+work does not modify Blogger, DNS, or any production deployment.
 
 ## Resolved versions
 
@@ -72,7 +72,7 @@ Phase 0 intentionally does not download Playwright Chromium during local setup.
 The Playwright configuration and smoke test are committed, and GitHub Actions
 installs Chromium with `npx playwright install --with-deps chromium` before
 running `npm run test:e2e`. Local e2e may be run manually after installing a
-Playwright browser, but it is not required for Phase 0 local validation.
+Playwright browser, but it is not required for local validation.
 
 ## Build and preview
 
@@ -88,8 +88,11 @@ Git.
 
 ```text
 .github/workflows/ci.yml  Baseline GitHub Actions validation
-src/lib/                  Minimal shared Phase 0 code
-src/pages/index.astro     The single temporary smoke page
+src/components/           Global shell components
+src/layouts/              Base page layout
+src/lib/                  Shared shell constants and smoke-test data
+src/pages/index.astro     The single temporary placeholder page
+src/styles/               Layered global CSS tokens, reset, base, layout, utilities, print
 tests/unit/               Vitest smoke test
 tests/e2e/                Playwright production-preview smoke test
 astro.config.mjs          Static output and safe site URL configuration
@@ -102,6 +105,14 @@ tsconfig.json             Strict TypeScript configuration
 
 The design specification and implementation plan remain at the repository root
 as planning inputs for later phases.
+
+## Fonts
+
+Phase 1 defines `--font-display`, `--font-reading`, `--font-interface`, and
+`--font-code` tokens. The initial stacks name Fraunces, Newsreader, and IBM Plex
+Mono with system fallbacks, but no font packages or self-hosted font files are
+installed yet. Future font loading can change the token definitions without
+rewriting components.
 
 ## Licences
 

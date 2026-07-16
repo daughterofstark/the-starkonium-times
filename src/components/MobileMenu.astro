@@ -1,0 +1,103 @@
+---
+import { MOBILE_EXTRA_LINKS, PRIMARY_NAV_LINKS } from '../lib/shell';
+
+const primaryLinks = [...PRIMARY_NAV_LINKS, MOBILE_EXTRA_LINKS[0]];
+const secondaryLinks = MOBILE_EXTRA_LINKS.slice(1);
+---
+
+<details class="mobile-menu">
+  <summary class="mobile-menu__summary">MENU</summary>
+  <nav class="mobile-menu__panel" aria-label="Mobile">
+    <ul class="mobile-menu__list mobile-menu__list--primary">
+      {
+        primaryLinks.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+    <ul class="mobile-menu__list mobile-menu__list--secondary">
+      {
+        secondaryLinks.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</details>
+
+<style>
+  .mobile-menu {
+    display: block;
+    position: relative;
+  }
+
+  .mobile-menu__summary {
+    cursor: pointer;
+    font-family: var(--font-interface);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    list-style: none;
+    text-transform: uppercase;
+  }
+
+  .mobile-menu__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-menu__panel {
+    background: var(--paper-raised);
+    border-block: 1px solid var(--ink-900);
+    inset-block-start: calc(100% + var(--space-4));
+    inset-inline: auto 0;
+    min-inline-size: min(21rem, calc(100vw - (2 * var(--gutter))));
+    padding: var(--space-5);
+    position: absolute;
+    z-index: 10;
+  }
+
+  .mobile-menu__list {
+    display: grid;
+    gap: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .mobile-menu__list + .mobile-menu__list {
+    border-block-start: 2px solid var(--ink-900);
+    margin-block-start: var(--space-5);
+    padding-block-start: var(--space-3);
+  }
+
+  .mobile-menu__list a {
+    border-block-end: 1px solid var(--rule);
+    color: var(--ink-900);
+    display: block;
+    padding-block: var(--space-3);
+    text-decoration: none;
+  }
+
+  .mobile-menu__list--primary a {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.15;
+  }
+
+  .mobile-menu__list--secondary a {
+    color: var(--ink-700);
+    font-family: var(--font-interface);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  @media (min-width: 48rem) {
+    .mobile-menu {
+      display: none;
+    }
+  }
+</style>

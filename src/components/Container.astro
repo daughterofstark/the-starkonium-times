@@ -1,0 +1,19 @@
+---
+interface Props {
+  as?: 'div' | 'section' | 'article' | 'nav' | 'aside';
+  class?: string;
+  width?: 'content' | 'reading' | 'full';
+}
+
+const {
+  as: Element = 'div',
+  class: className,
+  width = 'content',
+} = Astro.props as Props;
+const widthClass = width === 'reading' ? 'reading-measure' : '';
+const classes = ['container', widthClass, className].filter(Boolean).join(' ');
+---
+
+<Element class={classes}>
+  <slot />
+</Element>
