@@ -1,0 +1,44 @@
+{
+  "name": "the-starkonium-times",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.16.0",
+  "engines": {
+    "node": "24.18.0",
+    "npm": "11.16.0"
+  },
+  "scripts": {
+    "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview --port 4321",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "ASTRO_TELEMETRY_DISABLED=1 astro check && tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:local": "node scripts/run-e2e-if-browser-installed.mjs",
+    "validate": "npm run format:check && npm run lint && npm run typecheck && npm test",
+    "validate:full": "npm run validate && npm run build && npm run test:e2e:local"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "7.0.3",
+    "astro": "7.0.8"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.9",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.61.1",
+    "@types/node": "26.1.1",
+    "eslint": "10.7.0",
+    "eslint-plugin-astro": "3.0.0",
+    "prettier": "3.9.5",
+    "prettier-plugin-astro": "0.14.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.63.0",
+    "vitest": "4.1.10"
+  }
+}

@@ -1,0 +1,7 @@
+.astro/
+dist/
+node_modules/
+playwright-report/
+test-results/
+STARKONIUM_IMPLEMENTATION_PLAN.md
+STARKONIUM_WEBSITE_DESIGN_SPEC.md
