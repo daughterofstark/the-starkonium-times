@@ -1,0 +1,33 @@
+---
+interface Props {
+  message: string;
+  action?: {
+    label: string;
+    href: string;
+  };
+}
+
+const { message, action } = Astro.props as Props;
+---
+
+<div class="empty-state">
+  <p>{message}</p>
+  {action && <a href={action.href}>{action.label}</a>}
+</div>
+
+<style>
+  .empty-state {
+    border-block: 1px solid var(--rule);
+    color: var(--ink-700);
+    display: grid;
+    gap: var(--space-3);
+    padding-block: var(--space-5);
+  }
+
+  .empty-state p {
+    font-family: var(--font-interface);
+    font-size: var(--step--1);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+</style>

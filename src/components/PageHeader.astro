@@ -1,0 +1,91 @@
+---
+import EditorialRule from './EditorialRule.astro';
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  standfirst?: string;
+  published?: Date;
+  updated?: Date;
+}
+
+const { eyebrow, title, standfirst, published, updated } = Astro.props as Props;
+---
+
+<header class="page-header">
+  {eyebrow && <p class="page-header__eyebrow">{eyebrow}</p>}
+  <div class="page-header__title-row">
+    <div class="flow">
+      <h1>{title}</h1>
+      {standfirst && <p class="page-header__standfirst">{standfirst}</p>}
+    </div>
+    {
+      Astro.slots.has('action') && (
+        <div class="page-header__action">
+          <slot name="action" />
+        </div>
+      )
+    }
+  </div>
+  {
+    (published || updated) && (
+      <p class="page-header__meta">
+        {published && (
+          <time datetime={published.toISOString()}>
+            Published {published.toISOString().slice(0, 10)}
+          </time>
+        )}
+        {updated && (
+          <time datetime={updated.toISOString()}>
+            Updated {updated.toISOString().slice(0, 10)}
+          </time>
+        )}
+      </p>
+    )
+  }
+  <EditorialRule decorative />
+</header>
+
+<style>
+  .page-header {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .page-header__eyebrow,
+  .page-header__meta {
+    color: var(--ink-500);
+    font-family: var(--font-interface);
+    font-size: 0.76rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .page-header__title-row {
+    align-items: end;
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .page-header__standfirst {
+    color: var(--ink-700);
+    font-size: var(--step-1);
+    line-height: 1.5;
+  }
+
+  .page-header__action {
+    justify-self: start;
+  }
+
+  .page-header__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 48rem) {
+    .page-header__title-row {
+      grid-template-columns: 1fr auto;
+    }
+  }
+</style>

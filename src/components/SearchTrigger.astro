@@ -1,0 +1,46 @@
+---
+interface Props {
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props as Props;
+---
+
+<a
+  class:list={['search-trigger', compact && 'search-trigger--compact']}
+  href="/search"
+  aria-label="Search The Starkonium Times"
+>
+  <span aria-hidden="true">⌕</span>
+  <span class="search-trigger__label">Search</span>
+  <span class="search-trigger__hint" aria-hidden="true">⌘K</span>
+</a>
+
+<style>
+  .search-trigger {
+    align-items: center;
+    color: var(--ink-700);
+    display: inline-flex;
+    font-family: var(--font-interface);
+    font-size: 0.78rem;
+    gap: var(--space-2);
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .search-trigger:hover {
+    color: var(--ink-900);
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+  }
+
+  .search-trigger__hint {
+    color: var(--ink-500);
+  }
+
+  .search-trigger--compact .search-trigger__label,
+  .search-trigger--compact .search-trigger__hint {
+    display: none;
+  }
+</style>

@@ -1,0 +1,59 @@
+---
+import { projectStatusMeta, type ProjectStatus } from '../utils/status';
+
+interface Props {
+  status: ProjectStatus;
+  size?: 'sm' | 'md';
+}
+
+const { status, size = 'sm' } = Astro.props as Props;
+const meta = projectStatusMeta[status];
+---
+
+<span
+  class:list={[
+    'status-label',
+    `status-label--${meta.tone}`,
+    `status-label--${size}`,
+  ]}
+>
+  <span class="status-label__glyph" aria-hidden="true">{meta.glyph}</span>
+  <span>{meta.label}</span>
+</span>
+
+<style>
+  .status-label {
+    align-items: center;
+    color: var(--ink-700);
+    display: inline-flex;
+    font-family: var(--font-interface);
+    gap: var(--space-2);
+    letter-spacing: 0.09em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .status-label--sm {
+    font-size: 0.72rem;
+  }
+
+  .status-label--md {
+    font-size: 0.82rem;
+  }
+
+  .status-label--accent .status-label__glyph {
+    color: var(--orange);
+  }
+
+  .status-label--strong {
+    color: var(--ink-900);
+  }
+
+  .status-label--muted {
+    color: var(--ink-500);
+  }
+
+  .status-label--quiet {
+    color: var(--ink-500);
+  }
+</style>

@@ -1,0 +1,109 @@
+---
+import type { ContentEntry } from '../utils/content';
+import type { TopicData } from '../utils/content-schemas';
+import { resolveTopicLabels } from '../utils/topics';
+
+interface Props {
+  slugs: string[];
+  topics: ContentEntry<TopicData>[];
+  variant?: 'inline' | 'bordered';
+  max?: number;
+  linked?: boolean;
+}
+
+const {
+  slugs,
+  topics,
+  variant = 'inline',
+  max = 6,
+  linked = true,
+} = Astro.props as Props;
+const resolved = resolveTopicLabels(slugs, topics);
+const visible = resolved.slice(0, max);
+const hidden = resolved.slice(max);
+---
+
+{
+  resolved.length > 0 && (
+    <ul
+      class:list={['topic-list', `topic-list--${variant}`]}
+      aria-label="Topics"
+    >
+      {visible.map((topic) => (
+        <li>
+          {linked ? (
+            <a href={`/topics/${topic.slug}`} data-known={String(topic.known)}>
+              {topic.label}
+            </a>
+          ) : (
+            <span data-known={String(topic.known)}>{topic.label}</span>
+          )}
+        </li>
+      ))}
+      {hidden.length > 0 && (
+        <li>
+          <details class="topic-list__more">
+            <summary>+{hidden.length} more</summary>
+            <span>
+              {hidden.map((topic) => (
+                <a
+                  href={`/topics/${topic.slug}`}
+                  data-known={String(topic.known)}
+                >
+                  {topic.label}
+                </a>
+              ))}
+            </span>
+          </details>
+        </li>
+      )}
+    </ul>
+  )
+}
+
+<style>
+  .topic-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .topic-list a,
+  .topic-list span,
+  .topic-list summary {
+    color: var(--ink-700);
+    font-family: var(--font-interface);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .topic-list--inline li + li::before {
+    color: var(--ink-300);
+    content: '·';
+    margin-inline-end: var(--space-2);
+  }
+
+  .topic-list--bordered a,
+  .topic-list--bordered span,
+  .topic-list--bordered summary {
+    border: 1px solid var(--rule);
+    display: inline-flex;
+    padding: 0.15rem var(--space-2);
+  }
+
+  .topic-list [data-known='false'] {
+    color: var(--orange-ink);
+  }
+
+  .topic-list__more span {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-inline-start: var(--space-2);
+  }
+</style>

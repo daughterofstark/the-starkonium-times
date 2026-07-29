@@ -1,0 +1,35 @@
+---
+interface Props {
+  label?: string;
+  size?: 'sm' | 'md';
+}
+
+const { label, size = 'sm' } = Astro.props as Props;
+---
+
+<span
+  class:list={['insertion-caret', `insertion-caret--${size}`]}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+>
+  ‸
+</span>
+
+<style>
+  .insertion-caret {
+    color: var(--orange);
+    display: inline-block;
+    font-family: var(--font-display);
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .insertion-caret--sm {
+    font-size: 0.75em;
+  }
+
+  .insertion-caret--md {
+    font-size: 1em;
+  }
+</style>

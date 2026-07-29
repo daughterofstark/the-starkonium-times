@@ -1,0 +1,40 @@
+---
+import { formatDate } from '../utils/format';
+
+interface Props {
+  kind: string;
+  date: Date;
+  updated?: Date | undefined;
+  readingTime?: number | undefined;
+}
+
+const { kind, date, updated, readingTime } = Astro.props as Props;
+---
+
+<p class="article-metadata">
+  <span>{kind}</span>
+  <time datetime={date.toISOString()}>{formatDate(date)}</time>
+  {updated && <span>Updated {formatDate(updated)}</span>}
+  {readingTime && <span>{readingTime} min read</span>}
+</p>
+
+<style>
+  .article-metadata {
+    color: var(--ink-500);
+    display: flex;
+    flex-wrap: wrap;
+    font-family: var(--font-interface);
+    font-size: 0.76rem;
+    gap: var(--space-2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .article-metadata span + time::before,
+  .article-metadata time + span::before,
+  .article-metadata span + span::before {
+    color: var(--ink-300);
+    content: '·';
+    margin-inline-end: var(--space-2);
+  }
+</style>

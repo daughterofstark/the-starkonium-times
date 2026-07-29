@@ -1,0 +1,102 @@
+---
+export interface MetadataItem {
+  label: string;
+  value: string | number | Date | { label: string; href: string } | string[];
+  type?: 'text' | 'mono' | 'date' | 'link' | 'chips';
+}
+
+interface Props {
+  items: MetadataItem[];
+  dense?: boolean;
+}
+
+const { items, dense = false } = Astro.props as Props;
+
+function valueToText(value: MetadataItem['value']) {
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (Array.isArray(value)) return value.join(', ');
+  if (typeof value === 'object') return value.label;
+  return String(value);
+}
+---
+
+<dl class:list={['metadata-list', dense && 'metadata-list--dense']}>
+  {
+    items.map((item) => (
+      <>
+        <dt>{item.label}</dt>
+        <dd class:list={[item.type === 'mono' && 'metadata-list__mono']}>
+          {item.type === 'link' &&
+          typeof item.value === 'object' &&
+          !Array.isArray(item.value) &&
+          !(item.value instanceof Date) ? (
+            <a href={item.value.href}>{item.value.label}</a>
+          ) : item.type === 'chips' && Array.isArray(item.value) ? (
+            <span class="metadata-list__chips">
+              {item.value.map((value) => (
+                <span>{value}</span>
+              ))}
+            </span>
+          ) : (
+            valueToText(item.value)
+          )}
+        </dd>
+      </>
+    ))
+  }
+</dl>
+
+<style>
+  .metadata-list {
+    border-block: 1px solid var(--rule);
+    display: grid;
+    gap: var(--space-3) var(--space-5);
+    grid-template-columns: minmax(5rem, 9rem) 1fr;
+    margin: 0;
+    padding-block: var(--space-4);
+  }
+
+  .metadata-list--dense {
+    gap: var(--space-2) var(--space-4);
+    padding-block: var(--space-3);
+  }
+
+  .metadata-list dt {
+    color: var(--ink-500);
+    font-family: var(--font-interface);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .metadata-list dd {
+    color: var(--ink-900);
+    margin: 0;
+  }
+
+  .metadata-list__mono {
+    font-family: var(--font-interface);
+    font-size: 0.86rem;
+  }
+
+  .metadata-list__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .metadata-list__chips span {
+    background: var(--paper-sunk);
+    font-family: var(--font-interface);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    padding: 0.1rem var(--space-2);
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 35.99rem) {
+    .metadata-list {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

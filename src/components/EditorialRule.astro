@@ -1,0 +1,48 @@
+---
+interface Props {
+  variant?: 'default' | 'strong' | 'double';
+  decorative?: boolean;
+  class?: string;
+}
+
+const {
+  variant = 'default',
+  decorative = false,
+  class: className,
+} = Astro.props as Props;
+const classes = ['editorial-rule', `editorial-rule--${variant}`, className]
+  .filter(Boolean)
+  .join(' ');
+---
+
+{
+  decorative ? (
+    <div class={classes} aria-hidden="true" />
+  ) : (
+    <hr class={classes} />
+  )
+}
+
+<style>
+  .editorial-rule {
+    border: 0;
+    border-block-start: 1px solid var(--rule);
+    margin: 0;
+  }
+
+  .editorial-rule--strong {
+    border-block-start-color: var(--ink-900);
+  }
+
+  .editorial-rule--double {
+    border-block-start: 3px solid var(--ink-900);
+    padding-block-start: 2px;
+    position: relative;
+  }
+
+  .editorial-rule--double::after {
+    border-block-start: 1px solid var(--ink-900);
+    content: '';
+    display: block;
+  }
+</style>

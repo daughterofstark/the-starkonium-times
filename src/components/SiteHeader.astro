@@ -1,6 +1,7 @@
 ---
 import Container from './Container.astro';
 import MobileMenu from './MobileMenu.astro';
+import SearchTrigger from './SearchTrigger.astro';
 import Wordmark from './Wordmark.astro';
 import { PRIMARY_NAV_LINKS } from '../lib/shell';
 ---
@@ -18,14 +19,7 @@ import { PRIMARY_NAV_LINKS } from '../lib/shell';
       }
     </nav>
     <div class="site-header__actions">
-      <a
-        class="site-header__search"
-        href="/search"
-        aria-label="Search The Starkonium Times"
-      >
-        Search
-        <span aria-hidden="true">⌕</span>
-      </a>
+      <SearchTrigger />
       <a class="site-header__now" href="/now">
         <span aria-hidden="true" class="site-header__now-mark"></span>
         Now
@@ -59,7 +53,6 @@ import { PRIMARY_NAV_LINKS } from '../lib/shell';
   }
 
   .site-header__nav-link,
-  .site-header__search,
   .site-header__now {
     color: var(--ink-700);
     font-family: var(--font-interface);
@@ -70,7 +63,6 @@ import { PRIMARY_NAV_LINKS } from '../lib/shell';
   }
 
   .site-header__nav-link:hover,
-  .site-header__search:hover,
   .site-header__now:hover {
     color: var(--ink-900);
     text-decoration: underline;
@@ -83,12 +75,6 @@ import { PRIMARY_NAV_LINKS } from '../lib/shell';
     display: flex;
     gap: var(--space-4);
     margin-inline-start: auto;
-  }
-
-  .site-header__search {
-    align-items: center;
-    display: inline-flex;
-    gap: var(--space-1);
   }
 
   .site-header__now {
