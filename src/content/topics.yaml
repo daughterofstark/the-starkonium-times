@@ -1,0 +1,25 @@
+structural-biology:
+  slug: structural-biology
+  label: Structural biology
+  facet: field
+  description: Shape-centered study of biological molecules and their function.
+molecular-dynamics:
+  slug: molecular-dynamics
+  label: Molecular dynamics
+  facet: method
+  description: Simulated motion used as a placeholder method topic.
+pytorch:
+  slug: pytorch
+  label: PyTorch
+  facet: tool
+  description: A machine-learning tool topic used by fixtures.
+reproducibility:
+  slug: reproducibility
+  label: Reproducibility
+  facet: theme
+  description: Practices that make computational work checkable.
+writing-process:
+  slug: writing-process
+  label: Writing process
+  facet: theme
+  description: Notes about drafting, revising, and maintaining a public archive.

@@ -1,0 +1,14 @@
+fixture-series:
+  slug: fixture-series
+  title: Fixture Series
+  volume: two
+  status: active
+  ordered: true
+  description: A deliberately fake series used only to validate ordered writing metadata.
+volume-one-sample:
+  slug: volume-one-sample
+  title: Volume One Sample
+  volume: one
+  status: paused
+  ordered: true
+  description: Placeholder metadata proving older imported writing can remain traceable.
