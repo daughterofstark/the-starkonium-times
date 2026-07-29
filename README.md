@@ -6,10 +6,11 @@ public research notebook built from Markdown and MDX in Git.
 
 ## Current status
 
-Phase 1 design tokens and global shell. The repository contains one placeholder
-page that exercises the site shell, global CSS architecture, header, navigation,
-footer, and base layout. No content collections, real homepage content, project
-pages, writing pages, search, migration, or deployment work has started.
+Phase 2 content model. The repository contains one placeholder page plus the
+content collection schemas, fixture content, shared content utilities, and
+Ledger aggregation foundation. No real homepage sections, public content pages,
+project pages, writing pages, review pages, search, migration, or deployment
+work has started.
 
 The live Blogger site and the `starkonium.com` domain are untouched. Current
 work does not modify Blogger, DNS, or any production deployment.
@@ -89,10 +90,13 @@ Git.
 ```text
 .github/workflows/ci.yml  Baseline GitHub Actions validation
 src/components/           Global shell components
+src/content/              Fake fixture content and YAML metadata
+src/content.config.ts     Astro 7 content collection configuration
 src/layouts/              Base page layout
 src/lib/                  Shared shell constants and smoke-test data
 src/pages/index.astro     The single temporary placeholder page
 src/styles/               Layered global CSS tokens, reset, base, layout, utilities, print
+src/utils/                Content schemas, validators, derived fields, Ledger utilities
 tests/unit/               Vitest smoke test
 tests/e2e/                Playwright production-preview smoke test
 astro.config.mjs          Static output and safe site URL configuration
@@ -105,6 +109,18 @@ tsconfig.json             Strict TypeScript configuration
 
 The design specification and implementation plan remain at the repository root
 as planning inputs for later phases.
+
+## Content fixtures
+
+Phase 2 fixture content lives under `src/content/` and is deliberately fake.
+Projects, writing, reviews, experience entries, and Now entries use Markdown or
+MDX collection files. Topics, series, and people metadata use YAML files loaded
+with Astro 7's `file()` loader. Relationship and vocabulary rules are covered by
+unit tests around the shared validators.
+
+Public pages are still placeholders. The fixtures exist to prove schemas and
+utilities, not to publish real biography, research claims, Blogger imports, or
+final site sections.
 
 ## Fonts
 
