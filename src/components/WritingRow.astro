@@ -1,0 +1,61 @@
+---
+import ArticleMetadata from './ArticleMetadata.astro';
+import type { ContentEntry } from '../utils/content';
+import type { WritingData } from '../utils/content-schemas';
+
+interface Props {
+  entry: ContentEntry<WritingData>;
+  href?: string;
+  showStandfirst?: boolean;
+  readingTime?: number;
+}
+
+const {
+  entry,
+  href = `/writing/${entry.id}`,
+  showStandfirst = true,
+  readingTime,
+} = Astro.props as Props;
+---
+
+<article class="writing-row">
+  <ArticleMetadata
+    kind={entry.data.kind}
+    date={entry.data.published}
+    updated={entry.data.updated}
+    readingTime={readingTime}
+  />
+  <h2><a href={href}>{entry.data.title}</a></h2>
+  {entry.data.volume === 'one' && <p class="writing-row__volume">Volume I</p>}
+  {showStandfirst && <p>{entry.data.standfirst}</p>}
+</article>
+
+<style>
+  .writing-row {
+    border-block-end: 1px solid var(--rule);
+    display: grid;
+    gap: var(--space-3);
+    padding-block: var(--space-5);
+  }
+
+  .writing-row h2 {
+    font-size: var(--step-2);
+  }
+
+  .writing-row h2 a {
+    color: var(--ink-900);
+    text-decoration: none;
+  }
+
+  .writing-row p {
+    color: var(--ink-700);
+  }
+
+  .writing-row__volume {
+    color: var(--orange-ink);
+    font-family: var(--font-interface);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>

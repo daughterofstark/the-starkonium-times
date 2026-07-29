@@ -1,0 +1,41 @@
+---
+interface Props {
+  text: string;
+  figureNumber?: string | undefined;
+  credit?: string | undefined;
+}
+
+const { text, figureNumber, credit } = Astro.props as Props;
+---
+
+<figcaption class="figure-caption">
+  {figureNumber && <span>{figureNumber} — </span>}
+  {text}
+  {credit && <small>{credit}</small>}
+</figcaption>
+
+<style>
+  .figure-caption {
+    color: var(--ink-500);
+    font-size: var(--step--1);
+    line-height: 1.5;
+    max-inline-size: 60ch;
+  }
+
+  .figure-caption span {
+    color: var(--orange-ink);
+    font-family: var(--font-interface);
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .figure-caption small {
+    color: var(--ink-500);
+    display: block;
+    font-family: var(--font-interface);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    margin-block-start: var(--space-1);
+  }
+</style>

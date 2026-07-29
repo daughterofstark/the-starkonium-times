@@ -1,0 +1,40 @@
+---
+import EmptyState from './EmptyState.astro';
+import LedgerRow from './LedgerRow.astro';
+import type { LedgerEntry } from '../utils/ledger';
+
+interface Props {
+  entries: LedgerEntry[];
+  compact?: boolean;
+  limit?: number;
+  emptyMessage?: string;
+}
+
+const {
+  entries,
+  compact = false,
+  limit,
+  emptyMessage = 'No Ledger entries yet.',
+} = Astro.props as Props;
+const visibleEntries = limit ? entries.slice(0, limit) : entries;
+---
+
+{
+  visibleEntries.length > 0 ? (
+    <ol class:list={['ledger', compact && 'ledger--compact']}>
+      {visibleEntries.map((entry) => (
+        <LedgerRow entry={entry} compact={compact} />
+      ))}
+    </ol>
+  ) : (
+    <EmptyState message={emptyMessage} />
+  )
+}
+
+<style>
+  .ledger {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+</style>

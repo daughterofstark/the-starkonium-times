@@ -1,0 +1,46 @@
+---
+import FigureCaption from './FigureCaption.astro';
+
+interface Props {
+  caption?: string;
+  figureNumber?: string;
+  credit?: string;
+  bleed?: boolean;
+}
+
+const { caption, figureNumber, credit, bleed = false } = Astro.props as Props;
+---
+
+<figure class:list={['figure', bleed && 'figure--bleed']}>
+  <div class="figure__media">
+    <slot />
+  </div>
+  {
+    caption && (
+      <FigureCaption
+        text={caption}
+        figureNumber={figureNumber}
+        credit={credit}
+      />
+    )
+  }
+</figure>
+
+<style>
+  .figure {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+  }
+
+  .figure__media {
+    background: var(--paper-sunk);
+    border-block: 1px solid var(--rule);
+    min-block-size: 8rem;
+    padding: var(--space-4);
+  }
+
+  .figure--bleed {
+    inline-size: min(100%, var(--w-content));
+  }
+</style>

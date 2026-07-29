@@ -1,0 +1,80 @@
+---
+import type { LedgerEntry } from '../utils/ledger';
+import { formatDate } from '../utils/format';
+
+interface Props {
+  entry: LedgerEntry;
+  compact?: boolean;
+}
+
+const { entry, compact = false } = Astro.props as Props;
+---
+
+<li class:list={['ledger-row', compact && 'ledger-row--compact']}>
+  <time datetime={entry.date.toISOString()}>{formatDate(entry.date)}</time>
+  <span class="ledger-row__tag">{entry.tag}</span>
+  <a href={entry.href}>
+    {
+      entry.projectTitle && (
+        <span class="ledger-row__context">{entry.projectTitle}</span>
+      )
+    }
+    <span>{entry.summary}</span>
+  </a>
+</li>
+
+<style>
+  .ledger-row {
+    border-block-end: 1px solid var(--rule);
+    display: grid;
+    gap: var(--space-2) var(--space-4);
+    grid-template-columns: minmax(7rem, auto) 3.5rem 1fr;
+    padding-block: var(--space-3);
+  }
+
+  .ledger-row time,
+  .ledger-row__tag {
+    color: var(--ink-500);
+    font-family: var(--font-interface);
+    font-size: 0.76rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .ledger-row__tag {
+    color: var(--ink-900);
+  }
+
+  .ledger-row a {
+    color: var(--ink-900);
+    text-decoration: none;
+  }
+
+  .ledger-row a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .ledger-row__context {
+    color: var(--ink-500);
+    display: block;
+    font-family: var(--font-interface);
+    font-size: 0.74rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .ledger-row--compact {
+    grid-template-columns: 4rem 1fr;
+  }
+
+  .ledger-row--compact time {
+    display: none;
+  }
+
+  @media (max-width: 42rem) {
+    .ledger-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

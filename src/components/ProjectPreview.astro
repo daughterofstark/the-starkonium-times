@@ -1,0 +1,72 @@
+---
+import MetadataList from './MetadataList.astro';
+import StatusLabel from './StatusLabel.astro';
+import TopicList from './TopicList.astro';
+import type { ContentEntry } from '../utils/content';
+import type { ProjectData, TopicData } from '../utils/content-schemas';
+import { formatYear } from '../utils/format';
+import { getDerivedProjectFields } from '../utils/projects';
+
+interface Props {
+  project: ContentEntry<ProjectData>;
+  topics: ContentEntry<TopicData>[];
+  href?: string;
+}
+
+const {
+  project,
+  topics,
+  href = `/projects/${project.id}`,
+} = Astro.props as Props;
+const derived = getDerivedProjectFields(project);
+const topicSlugs = [project.data.field, ...project.data.topics];
+---
+
+<article class="project-preview">
+  <header class="project-preview__header">
+    <StatusLabel status={project.data.status} />
+    <h2><a href={href}>{project.data.title}</a></h2>
+  </header>
+  <p>{project.data.thesis}</p>
+  <TopicList slugs={topicSlugs} topics={topics} max={5} />
+  <MetadataList
+    dense
+    items={[
+      {
+        label: 'Started',
+        value: formatYear(project.data.started),
+        type: 'mono',
+      },
+      { label: 'Updated', value: derived.updatedIso, type: 'mono' },
+      { label: 'Updates', value: String(derived.updateCount), type: 'mono' },
+    ]}
+  />
+</article>
+
+<style>
+  .project-preview {
+    border-block: 1px solid var(--rule);
+    display: grid;
+    gap: var(--space-4);
+    padding-block: var(--space-5);
+  }
+
+  .project-preview__header {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .project-preview h2 {
+    font-size: var(--step-2);
+    max-inline-size: 18ch;
+  }
+
+  .project-preview h2 a {
+    color: var(--ink-900);
+    text-decoration: none;
+  }
+
+  .project-preview p {
+    color: var(--ink-700);
+  }
+</style>

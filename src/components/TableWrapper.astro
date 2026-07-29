@@ -1,0 +1,39 @@
+---
+interface Props {
+  label?: string;
+}
+
+const { label = 'Scrollable table' } = Astro.props as Props;
+---
+
+<div class="table-wrapper" role="region" aria-label={label} tabindex="0">
+  <slot />
+</div>
+
+<style>
+  .table-wrapper {
+    border-block: 1px solid var(--rule);
+    overflow-x: auto;
+    padding-block: var(--space-2);
+  }
+
+  .table-wrapper :global(table) {
+    border-collapse: collapse;
+    inline-size: 100%;
+    min-inline-size: 36rem;
+  }
+
+  .table-wrapper :global(th),
+  .table-wrapper :global(td) {
+    border-block-end: 1px solid var(--rule);
+    padding: var(--space-2);
+    text-align: start;
+  }
+
+  .table-wrapper :global(th) {
+    font-family: var(--font-interface);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+</style>

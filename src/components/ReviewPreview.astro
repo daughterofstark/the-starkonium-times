@@ -1,0 +1,66 @@
+---
+import ArticleMetadata from './ArticleMetadata.astro';
+import TopicList from './TopicList.astro';
+import type { ContentEntry } from '../utils/content';
+import type { ReviewData, TopicData } from '../utils/content-schemas';
+import { formatList } from '../utils/format';
+
+interface Props {
+  review: ContentEntry<ReviewData>;
+  topics: ContentEntry<TopicData>[];
+  href?: string;
+}
+
+const { review, topics, href = `/reviews/${review.id}` } = Astro.props as Props;
+const paper = review.data.paper;
+const paperContext = [
+  formatList(paper.authors),
+  String(paper.year),
+  paper.journal,
+]
+  .filter(Boolean)
+  .join(' · ');
+---
+
+<article class="review-preview">
+  <ArticleMetadata kind="Review" date={review.data.reviewed} />
+  <h2><a href={href}>{paper.title}</a></h2>
+  <p class="review-preview__paper">{paperContext}</p>
+  <p class="review-preview__verdict">{review.data.verdict}</p>
+  <p>{review.data.verdictLine}</p>
+  <TopicList
+    slugs={[review.data.field, ...review.data.topics]}
+    topics={topics}
+    max={5}
+  />
+</article>
+
+<style>
+  .review-preview {
+    border-block-end: 1px solid var(--rule);
+    display: grid;
+    gap: var(--space-3);
+    padding-block: var(--space-5);
+  }
+
+  .review-preview h2 {
+    font-size: var(--step-2);
+  }
+
+  .review-preview h2 a {
+    color: var(--ink-900);
+    text-decoration: none;
+  }
+
+  .review-preview__paper,
+  .review-preview p {
+    color: var(--ink-700);
+  }
+
+  .review-preview__verdict {
+    font-family: var(--font-interface);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>

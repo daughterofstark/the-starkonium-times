@@ -1,0 +1,32 @@
+---
+interface Props {
+  label?: string;
+}
+
+const { label = 'Note' } = Astro.props as Props;
+---
+
+<aside class="note">
+  <p class="note__label">{label}</p>
+  <div>
+    <slot />
+  </div>
+</aside>
+
+<style>
+  .note {
+    border-block: 1px solid var(--rule);
+    color: var(--ink-700);
+    display: grid;
+    gap: var(--space-2);
+    padding-block: var(--space-3);
+  }
+
+  .note__label {
+    color: var(--ink-500);
+    font-family: var(--font-interface);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+</style>
