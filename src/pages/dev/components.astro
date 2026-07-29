@@ -1,0 +1,161 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleMetadata from '../../components/ArticleMetadata.astro';
+import Callout from '../../components/Callout.astro';
+import Container from '../../components/Container.astro';
+import EditorialRule from '../../components/EditorialRule.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import Figure from '../../components/Figure.astro';
+import InsertionCaret from '../../components/InsertionCaret.astro';
+import Ledger from '../../components/Ledger.astro';
+import MetadataList from '../../components/MetadataList.astro';
+import Note from '../../components/Note.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ProjectPreview from '../../components/ProjectPreview.astro';
+import ProjectStatusStamp from '../../components/ProjectStatusStamp.astro';
+import ReviewPreview from '../../components/ReviewPreview.astro';
+import SearchTrigger from '../../components/SearchTrigger.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import StatusLabel from '../../components/StatusLabel.astro';
+import TableWrapper from '../../components/TableWrapper.astro';
+import TopicList from '../../components/TopicList.astro';
+import WritingRow from '../../components/WritingRow.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { ContentEntry } from '../../utils/content';
+import type {
+  NowData,
+  ProjectData,
+  ReviewData,
+  TopicData,
+  WritingData,
+} from '../../utils/content-schemas';
+import { getLedger } from '../../utils/ledger';
+
+const [
+  projectEntries,
+  writingEntries,
+  reviewEntries,
+  nowEntries,
+  topicEntries,
+] = await Promise.all([
+  getCollection('projects'),
+  getCollection('writing'),
+  getCollection('reviews'),
+  getCollection('now'),
+  getCollection('topics'),
+]);
+
+const projects = projectEntries as unknown as ContentEntry<ProjectData>[];
+const writing = writingEntries as unknown as ContentEntry<WritingData>[];
+const reviews = reviewEntries as unknown as ContentEntry<ReviewData>[];
+const now = nowEntries as unknown as ContentEntry<NowData>[];
+const topics = topicEntries as unknown as ContentEntry<TopicData>[];
+
+const project =
+  projects.find((entry) => entry.id === 'comprehensive-project') ?? projects[0];
+const minimalProject =
+  projects.find((entry) => entry.id === 'minimal-project') ?? project;
+const article =
+  writing.find((entry) => entry.id === 'volume-one-sample') ?? writing[0];
+const review = reviews[0];
+const ledgerEntries = getLedger(
+  { projects, writing, reviews, now },
+  { limit: 4 },
+);
+---
+
+<BaseLayout
+  title="Component Showcase — The Starkonium Times"
+  description="Internal Phase 3 component showcase for The Starkonium Times."
+  noindex
+>
+  <Container class="flow" width="content">
+    <PageHeader
+      eyebrow="Development"
+      title="Component Showcase"
+      standfirst="A harmless internal page proving Phase 3 components build against fake fixture data."
+    >
+      <SearchTrigger slot="action" />
+    </PageHeader>
+
+    <SectionHeader
+      title="Editorial primitives"
+      intro="Rules, carets, empty states, and metadata foundations."
+      caret
+    />
+    <EditorialRule />
+    <EditorialRule variant="strong" />
+    <p>
+      <InsertionCaret /> A decorative insertion mark sits inline without becoming
+      the accessible name.
+    </p>
+    <EmptyState message="No entries match this fixture state." />
+
+    <SectionHeader title="Status and topics" />
+    <p>
+      <StatusLabel status="active" />
+      {' '}
+      <ProjectStatusStamp status="validation" />
+    </p>
+    <TopicList
+      slugs={['structural-biology', 'reproducibility', 'unknown-fixture-topic']}
+      topics={topics}
+      variant="bordered"
+    />
+    <MetadataList
+      items={[
+        { label: 'Kind', value: 'Fixture', type: 'mono' },
+        {
+          label: 'Source',
+          value: { label: 'Example', href: 'https://example.com' },
+          type: 'link',
+        },
+        { label: 'Topics', value: ['schema', 'ledger'], type: 'chips' },
+      ]}
+    />
+
+    <SectionHeader title="Ledger and previews" />
+    <Ledger entries={ledgerEntries} />
+    {project && <ProjectPreview project={project} topics={topics} />}
+    {
+      minimalProject && (
+        <ProjectPreview project={minimalProject} topics={topics} />
+      )
+    }
+    {article && <WritingRow entry={article} />}
+    {review && <ReviewPreview review={review} topics={topics} />}
+
+    <SectionHeader title="Article support" />
+    <ArticleMetadata
+      kind="Fixture"
+      date={new Date('2026-07-09T00:00:00.000Z')}
+      readingTime={4}
+    />
+    <Figure
+      caption="A placeholder figure shell with a semantic caption."
+      figureNumber="Fig. 1"
+      credit="Fixture credit"
+    >
+      <p>Future media or generated charts will sit here.</p>
+    </Figure>
+    <Callout title="Revision note" variant="revision">
+      <p>This restrained callout uses a rule, not a decorative box.</p>
+    </Callout>
+    <Note>
+      <p>
+        This simple note renders inline for v1; margin sidenotes can come later.
+      </p>
+    </Note>
+    <TableWrapper label="Fixture component table">
+      <table>
+        <thead>
+          <tr><th>Component</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>MetadataList</td><td>Ready</td></tr>
+          <tr><td>LedgerRow</td><td>Ready</td></tr>
+        </tbody>
+      </table>
+    </TableWrapper>
+  </Container>
+</BaseLayout>

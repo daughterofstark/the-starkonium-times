@@ -47,3 +47,17 @@ test('mobile shell has reachable navigation without horizontal overflow', async 
   );
   expect(overflow).toBe(false);
 });
+
+test('dev component showcase renders Phase 3 examples', async ({ page }) => {
+  const response = await page.goto('/dev/components');
+
+  expect(response?.ok()).toBe(true);
+  await expect(
+    page.getByRole('heading', { name: 'Component Showcase' }),
+  ).toBeVisible();
+  await expect(page.getByText('Comprehensive Fixture Project')).toBeVisible();
+  await expect(page.getByText('Volume I')).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'Search The Starkonium Times' }).first(),
+  ).toBeVisible();
+});

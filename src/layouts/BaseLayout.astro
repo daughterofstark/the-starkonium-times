@@ -7,11 +7,13 @@ import '../styles/index.css';
 interface Props {
   title: string;
   description?: string;
+  noindex?: boolean;
 }
 
 const {
   title,
   description = 'The Starkonium Times is a personal research, writing, and project website.',
+  noindex = false,
 } = Astro.props;
 ---
 
@@ -21,6 +23,7 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <title>{title}</title>
   </head>
   <body>

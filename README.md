@@ -6,11 +6,10 @@ public research notebook built from Markdown and MDX in Git.
 
 ## Current status
 
-Phase 2 content model. The repository contains one placeholder page plus the
-content collection schemas, fixture content, shared content utilities, and
-Ledger aggregation foundation. No real homepage sections, public content pages,
-project pages, writing pages, review pages, search, migration, or deployment
-work has started.
+Phase 3 reusable components. The repository contains one placeholder page, the
+content model, and the core reusable component set needed by later pages. No
+real homepage sections, public project pages, writing pages, review pages,
+search implementation, migration, or deployment work has started.
 
 The live Blogger site and the `starkonium.com` domain are untouched. Current
 work does not modify Blogger, DNS, or any production deployment.
@@ -94,7 +93,8 @@ src/content/              Fake fixture content and YAML metadata
 src/content.config.ts     Astro 7 content collection configuration
 src/layouts/              Base page layout
 src/lib/                  Shared shell constants and smoke-test data
-src/pages/index.astro     The single temporary placeholder page
+src/pages/index.astro     The public temporary placeholder page
+src/pages/dev/            Noindexed internal component showcase
 src/styles/               Layered global CSS tokens, reset, base, layout, utilities, print
 src/utils/                Content schemas, validators, derived fields, Ledger utilities
 tests/unit/               Vitest smoke test
@@ -121,6 +121,13 @@ unit tests around the shared validators.
 Public pages are still placeholders. The fixtures exist to prove schemas and
 utilities, not to publish real biography, research claims, Blogger imports, or
 final site sections.
+
+## Component showcase
+
+Phase 3 adds `src/pages/dev/components.astro`, a noindexed internal showcase
+page that renders the reusable component set against fake fixture data. It is
+not linked from public navigation and exists only to prove components build
+before final pages exist.
 
 ## Fonts
 
