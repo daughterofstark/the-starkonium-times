@@ -1,4 +1,6 @@
 ---
+import type { HTMLAttributes } from 'astro/types';
+
 interface Props {
   as?: 'div' | 'section' | 'article' | 'nav' | 'aside';
   class?: string;
@@ -9,11 +11,12 @@ const {
   as: Element = 'div',
   class: className,
   width = 'content',
-} = Astro.props as Props;
+  ...attributes
+} = Astro.props as Props & HTMLAttributes<'div'>;
 const widthClass = width === 'reading' ? 'reading-measure' : '';
 const classes = ['container', widthClass, className].filter(Boolean).join(' ');
 ---
 
-<Element class={classes}>
+<Element {...attributes} class={classes}>
   <slot />
 </Element>

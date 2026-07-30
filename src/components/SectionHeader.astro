@@ -5,6 +5,7 @@ interface Props {
   title: string;
   intro?: string;
   href?: string;
+  id?: string;
   linkLabel?: string;
   level?: 2 | 3;
   caret?: boolean;
@@ -14,6 +15,7 @@ const {
   title,
   intro,
   href,
+  id,
   linkLabel = 'View all',
   level = 2,
   caret = false,
@@ -23,7 +25,7 @@ const Heading = `h${level}` as const;
 
 <header class="section-header">
   <div>
-    <Heading>
+    <Heading id={id}>
       {caret && <InsertionCaret />}
       <span>{title}</span>
     </Heading>

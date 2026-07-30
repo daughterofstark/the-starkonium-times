@@ -1,21 +1,379 @@
 ---
+import { getCollection } from 'astro:content';
+
 import Container from '../components/Container.astro';
+import EditorialRule from '../components/EditorialRule.astro';
+import EmptyState from '../components/EmptyState.astro';
+import Ledger from '../components/Ledger.astro';
+import MetadataList from '../components/MetadataList.astro';
+import ProjectPreview from '../components/ProjectPreview.astro';
+import ReviewPreview from '../components/ReviewPreview.astro';
+import SectionHeader from '../components/SectionHeader.astro';
+import WritingRow from '../components/WritingRow.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import type { ContentEntry } from '../utils/content';
+import { formatDate } from '../utils/format';
+import {
+  getLatestNow,
+  getNowFreshness,
+  selectHomepageProjects,
+  selectLatestReview,
+  selectLatestWriting,
+} from '../utils/home';
+import { getLedger } from '../utils/ledger';
+import type {
+  NowData,
+  ProjectData,
+  ReviewData,
+  TopicData,
+  WritingData,
+} from '../utils/content-schemas';
+
+const projects = (await getCollection(
+  'projects',
+)) as ContentEntry<ProjectData>[];
+const writing = (await getCollection('writing')) as ContentEntry<WritingData>[];
+const reviews = (await getCollection('reviews')) as ContentEntry<ReviewData>[];
+const now = (await getCollection('now')) as ContentEntry<NowData>[];
+const topics = (await getCollection('topics')) as ContentEntry<TopicData>[];
+
+const ledgerEntries = getLedger(
+  { projects, writing, reviews, now },
+  { limit: 8 },
+);
+const latestNow = getLatestNow(now);
+const nowFreshness = latestNow ? getNowFreshness(latestNow) : null;
+const selectedProjects = selectHomepageProjects(projects, 4);
+const latestWriting = selectLatestWriting(writing, 3);
+const latestReview = selectLatestReview(reviews);
+
+const nowItems = latestNow
+  ? [
+      { label: 'Building', value: latestNow.data.building },
+      { label: 'Investigating', value: latestNow.data.investigating },
+      { label: 'Writing', value: latestNow.data.writing },
+      {
+        label: 'Reading',
+        value:
+          latestNow.data.reading.length > 0
+            ? latestNow.data.reading.join(' · ')
+            : undefined,
+      },
+      { label: 'Learning', value: latestNow.data.learning },
+      {
+        label: 'Recently done',
+        value:
+          latestNow.data.recentlyDone.length > 0
+            ? latestNow.data.recentlyDone
+                .map((item) => `${item.text} (${formatDate(item.date)})`)
+                .join(' · ')
+            : undefined,
+      },
+      { label: 'Thinking about', value: latestNow.data.thinkingAbout },
+      { label: 'Location', value: latestNow.data.location },
+    ].filter((item): item is { label: string; value: string } =>
+      Boolean(item.value),
+    )
+  : [];
 ---
 
 <BaseLayout
   title="The Starkonium Times"
-  description="Phase 1 shell placeholder for The Starkonium Times."
+  description="A public notebook for research, software, paper reviews, and essays."
 >
-  <Container as="section" class="placeholder-page" width="reading">
-    <div class="placeholder-page__rule" aria-hidden="true"></div>
-    <div class="flow">
+  <Container as="section" class="home-opening">
+    <p class="home-opening__eyebrow">Public research notebook</p>
+    <div class="home-opening__grid">
       <h1>The Starkonium Times</h1>
       <p>
-        This placeholder page verifies the editorial shell, typography, spacing,
-        navigation, and footer before real site content arrives in a later
-        phase. For now, visit the future <a href="/writing">writing index</a>.
+        A public notebook for research, software, paper reviews, and essays —
+        published by Medha Sharma as The Starkonium Times.
       </p>
     </div>
   </Container>
+
+  <Container as="section" class="home-section" aria-labelledby="recent-ledger">
+    <SectionHeader
+      id="recent-ledger"
+      title="Recent Ledger"
+      intro="Chronological traces from projects, writing, reviews, and Now notes."
+      href="/log"
+      linkLabel="Open log"
+    />
+    <div class="home-ledger">
+      <Ledger
+        entries={ledgerEntries}
+        compact
+        emptyMessage="No public Ledger entries yet."
+      />
+    </div>
+  </Container>
+
+  <Container as="section" class="home-section" aria-labelledby="currently">
+    <SectionHeader
+      id="currently"
+      title="Currently"
+      intro="The newest Now entry, kept deliberately practical and provisional."
+    />
+    <div class="home-now">
+      {
+        latestNow ? (
+          <>
+            <div class="home-now__meta">
+              <p>
+                Updated{' '}
+                <time datetime={latestNow.data.date.toISOString()}>
+                  {formatDate(latestNow.data.date)}
+                </time>
+              </p>
+              {nowFreshness && (
+                <p class:list={[nowFreshness.overdue && 'is-overdue']}>
+                  {nowFreshness.label}
+                  {nowFreshness.overdue ? ' · overdue for refresh' : ''}
+                </p>
+              )}
+            </div>
+            {nowItems.length > 0 ? (
+              <MetadataList items={nowItems} />
+            ) : (
+              <EmptyState message="The newest Now entry has no public fields yet." />
+            )}
+          </>
+        ) : (
+          <EmptyState message="No Now entry has been published yet." />
+        )
+      }
+    </div>
+  </Container>
+
+  <Container
+    as="section"
+    class="home-section"
+    aria-labelledby="selected-projects"
+  >
+    <SectionHeader
+      id="selected-projects"
+      title="Selected projects"
+      intro="A small front-page cut from the project fixtures."
+      href="/projects"
+      linkLabel="All projects"
+    />
+    <div class="home-projects">
+      {
+        selectedProjects.length > 0 ? (
+          selectedProjects.map((project) => (
+            <ProjectPreview project={project} topics={topics} />
+          ))
+        ) : (
+          <EmptyState message="No public projects are ready for the homepage yet." />
+        )
+      }
+    </div>
+  </Container>
+
+  <Container as="section" class="home-section" aria-labelledby="latest-writing">
+    <SectionHeader
+      id="latest-writing"
+      title="Latest writing"
+      intro="Recent notes and paper-reading traces from fixture content."
+      href="/writing"
+      linkLabel="All writing"
+    />
+    <div class="home-writing">
+      {
+        latestWriting.length > 0 ? (
+          latestWriting.map((entry) => <WritingRow entry={entry} />)
+        ) : (
+          <EmptyState message="No public writing entries are ready yet." />
+        )
+      }
+      {
+        latestReview && (
+          <aside class="home-review" aria-labelledby="latest-review">
+            <div class="home-review__heading">
+              <h3 id="latest-review">Latest review</h3>
+              <a href="/reviews">All reviews</a>
+            </div>
+            <ReviewPreview review={latestReview} topics={topics} />
+          </aside>
+        )
+      }
+    </div>
+  </Container>
+
+  <Container
+    as="section"
+    class="home-section home-about"
+    aria-labelledby="about"
+  >
+    <SectionHeader id="about" title="About" />
+    <div class="home-about__grid">
+      <p>
+        The Starkonium Times is being built as a square, editorial home for
+        research notes, software projects, paper reviews, and essays. The Phase
+        4 homepage uses fake fixtures while the real archive, detail pages, and
+        migration work remain intentionally deferred.
+      </p>
+      <EditorialRule variant="double" />
+    </div>
+  </Container>
+
+  <Container
+    as="section"
+    class="home-section home-contact"
+    aria-labelledby="contact"
+  >
+    <SectionHeader id="contact" title="Contact / external links" />
+    <ul class="home-contact__links" aria-label="Contact and external links">
+      <li><a href="https://github.com/">GitHub placeholder</a></li>
+      <li><a href="/cv">CV placeholder</a></li>
+      <li><a href="/rss.xml">RSS placeholder</a></li>
+    </ul>
+  </Container>
 </BaseLayout>
+
+<style>
+  .home-opening,
+  .home-section {
+    padding-block: clamp(var(--space-8), 8vw, var(--space-12));
+  }
+
+  .home-opening__eyebrow,
+  .home-now__meta,
+  .home-review__heading,
+  .home-contact__links {
+    font-family: var(--font-interface);
+    font-size: var(--step--1);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .home-opening__eyebrow {
+    border-block: 1px solid var(--rule-strong);
+    color: var(--orange-ink);
+    margin-block-end: var(--space-6);
+    padding-block: var(--space-3);
+  }
+
+  .home-opening__grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: minmax(0, 0.85fr) minmax(16rem, 1fr);
+  }
+
+  .home-opening h1 {
+    font-size: clamp(var(--step-4), 10vw, var(--step-6));
+    line-height: 0.92;
+    max-inline-size: 8ch;
+  }
+
+  .home-opening__grid > p {
+    align-self: end;
+    color: var(--ink-700);
+    font-size: var(--step-2);
+    line-height: 1.35;
+    max-inline-size: 32ch;
+  }
+
+  .home-ledger,
+  .home-now,
+  .home-projects,
+  .home-writing,
+  .home-about__grid,
+  .home-contact__links {
+    margin-block-start: var(--space-5);
+  }
+
+  .home-now {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .home-now__meta {
+    color: var(--ink-500);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+  }
+
+  .home-now__meta p {
+    margin: 0;
+  }
+
+  .home-now__meta .is-overdue {
+    color: var(--orange-ink);
+  }
+
+  .home-projects {
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-writing {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .home-review {
+    border-block-start: 1px solid var(--rule-strong);
+    padding-block-start: var(--space-5);
+  }
+
+  .home-review__heading {
+    align-items: center;
+    color: var(--ink-500);
+    display: flex;
+    justify-content: space-between;
+    margin-block-end: var(--space-2);
+  }
+
+  .home-review__heading h3 {
+    font-size: inherit;
+  }
+
+  .home-review__heading a {
+    color: var(--ink-700);
+    text-decoration: none;
+  }
+
+  .home-about__grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 18rem);
+  }
+
+  .home-about p {
+    color: var(--ink-700);
+    font-size: var(--step-1);
+    max-inline-size: 52ch;
+  }
+
+  .home-contact__links {
+    border-block: 1px solid var(--rule);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+    list-style: none;
+    padding: var(--space-4) 0;
+  }
+
+  .home-contact__links a {
+    color: var(--ink-900);
+    text-decoration-color: var(--orange);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.22em;
+  }
+
+  @media (max-width: 52rem) {
+    .home-opening__grid,
+    .home-projects,
+    .home-about__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .home-opening h1 {
+      max-inline-size: 12ch;
+    }
+  }
+</style>
