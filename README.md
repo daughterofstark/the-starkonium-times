@@ -6,10 +6,11 @@ public research notebook built from Markdown and MDX in Git.
 
 ## Current status
 
-Phase 3 reusable components. The repository contains one placeholder page, the
-content model, and the core reusable component set needed by later pages. No
-real homepage sections, public project pages, writing pages, review pages,
-search implementation, migration, or deployment work has started.
+Phase 4 homepage. The repository contains the first real homepage structure,
+the content model, and the core reusable component set needed by later pages.
+The homepage is sourced from fake fixtures and provisional copy. No public
+project detail pages, writing detail pages, review detail pages, search
+implementation, migration, packaging, or deployment work has started.
 
 The live Blogger site and the `starkonium.com` domain are untouched. Current
 work does not modify Blogger, DNS, or any production deployment.
@@ -93,7 +94,7 @@ src/content/              Fake fixture content and YAML metadata
 src/content.config.ts     Astro 7 content collection configuration
 src/layouts/              Base page layout
 src/lib/                  Shared shell constants and smoke-test data
-src/pages/index.astro     The public temporary placeholder page
+src/pages/index.astro     Phase 4 homepage assembled from fixture content
 src/pages/dev/            Noindexed internal component showcase
 src/styles/               Layered global CSS tokens, reset, base, layout, utilities, print
 src/utils/                Content schemas, validators, derived fields, Ledger utilities
@@ -110,6 +111,15 @@ tsconfig.json             Strict TypeScript configuration
 The design specification and implementation plan remain at the repository root
 as planning inputs for later phases.
 
+## Homepage
+
+Phase 4 replaces the temporary placeholder with a v1 editorial front page at
+`/`. It includes an opening statement, recent Ledger entries, the newest Now
+entry, selected projects, latest writing/review fixtures, and short
+About/contact sections. Links to future indexes such as `/projects`, `/writing`,
+`/reviews`, `/log`, `/cv`, and `/rss.xml` are placeholders until later phases
+create those routes.
+
 ## Content fixtures
 
 Phase 2 fixture content lives under `src/content/` and is deliberately fake.
@@ -118,9 +128,9 @@ MDX collection files. Topics, series, and people metadata use YAML files loaded
 with Astro 7's `file()` loader. Relationship and vocabulary rules are covered by
 unit tests around the shared validators.
 
-Public pages are still placeholders. The fixtures exist to prove schemas and
-utilities, not to publish real biography, research claims, Blogger imports, or
-final site sections.
+The fixtures exist to prove schemas, utilities, components, and homepage
+selection rules, not to publish real biography, research claims, Blogger
+imports, or final archives.
 
 ## Component showcase
 
