@@ -1,5 +1,5 @@
 import type { ContentEntry } from './content';
-import { isoDate } from './content';
+import { isPublished, isoDate } from './content';
 import type { ProjectData } from './content-schemas';
 
 export function getDerivedProjectFields(project: ContentEntry<ProjectData>) {
@@ -17,4 +17,25 @@ export function getDerivedProjectFields(project: ContentEntry<ProjectData>) {
     isCurrent:
       project.data.status === 'active' || project.data.status === 'validation',
   };
+}
+
+export function selectProjectIndexEntries(
+  projects: ContentEntry<ProjectData>[],
+) {
+  return projects.filter(isPublished).sort(compareProjectsForIndex);
+}
+
+export function compareProjectsForIndex(
+  a: ContentEntry<ProjectData>,
+  b: ContentEntry<ProjectData>,
+) {
+  const updatedComparison =
+    getDerivedProjectFields(b).updatedAt.getTime() -
+    getDerivedProjectFields(a).updatedAt.getTime();
+
+  if (updatedComparison !== 0) {
+    return updatedComparison;
+  }
+
+  return a.data.title.localeCompare(b.data.title);
 }
