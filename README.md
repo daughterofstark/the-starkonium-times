@@ -6,11 +6,12 @@ public research notebook built from Markdown and MDX in Git.
 
 ## Current status
 
-Phase 4 homepage. The repository contains the first real homepage structure,
-the content model, and the core reusable component set needed by later pages.
-The homepage is sourced from fake fixtures and provisional copy. No public
-project detail pages, writing detail pages, review detail pages, search
-implementation, migration, packaging, or deployment work has started.
+Phase 5 projects. The repository contains the first real homepage structure,
+the public projects index, project detail pages, the content model, and the core
+reusable component set needed by later pages. Published pages are sourced from
+fake fixtures and provisional copy. No writing detail pages, review detail
+pages, search implementation, RSS, sitemap, migration, packaging, or deployment
+work has started.
 
 The live Blogger site and the `starkonium.com` domain are untouched. Current
 work does not modify Blogger, DNS, or any production deployment.
@@ -95,6 +96,7 @@ src/content.config.ts     Astro 7 content collection configuration
 src/layouts/              Base page layout
 src/lib/                  Shared shell constants and smoke-test data
 src/pages/index.astro     Phase 4 homepage assembled from fixture content
+src/pages/projects/       Phase 5 project index and detail routes
 src/pages/dev/            Noindexed internal component showcase
 src/styles/               Layered global CSS tokens, reset, base, layout, utilities, print
 src/utils/                Content schemas, validators, derived fields, Ledger utilities
@@ -116,9 +118,18 @@ as planning inputs for later phases.
 Phase 4 replaces the temporary placeholder with a v1 editorial front page at
 `/`. It includes an opening statement, recent Ledger entries, the newest Now
 entry, selected projects, latest writing/review fixtures, and short
-About/contact sections. Links to future indexes such as `/projects`, `/writing`,
-`/reviews`, `/log`, `/cv`, and `/rss.xml` are placeholders until later phases
-create those routes.
+About/contact sections. Links to future routes such as `/writing`, `/reviews`,
+`/log`, `/cv`, and `/rss.xml` remain placeholders until later phases create
+those routes.
+
+## Projects
+
+Phase 5 adds `/projects` and `/projects/[slug]`. The index lists non-draft
+project fixtures in derived-update order with progressive status and field
+filters. With JavaScript disabled, all public projects remain visible. Project
+detail pages render frontmatter metadata, topics, optional body prose, outputs,
+repositories, related writing links, and update rows when those fields exist.
+Draft project fixtures do not generate public detail pages.
 
 ## Content fixtures
 
