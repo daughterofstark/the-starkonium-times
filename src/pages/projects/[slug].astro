@@ -1,0 +1,264 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+
+import Container from '../../components/Container.astro';
+import EditorialRule from '../../components/EditorialRule.astro';
+import Ledger from '../../components/Ledger.astro';
+import MetadataList from '../../components/MetadataList.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ProjectStatusStamp from '../../components/ProjectStatusStamp.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import TopicList from '../../components/TopicList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { ContentEntry } from '../../utils/content';
+import { isPublished, slugFromEntry } from '../../utils/content';
+import type {
+  ProjectData,
+  TopicData,
+  WritingData,
+} from '../../utils/content-schemas';
+import { formatDate, labelFromSlug } from '../../utils/format';
+import { getLedger } from '../../utils/ledger';
+import { getDerivedProjectFields } from '../../utils/projects';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+
+  return projects.filter(isPublished).map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props as Props;
+const typedProject = project as ContentEntry<ProjectData>;
+const topics = (await getCollection('topics')) as ContentEntry<TopicData>[];
+const writing = (await getCollection('writing')) as ContentEntry<WritingData>[];
+const bodyHtml = project.rendered?.html ?? '';
+
+const derived = getDerivedProjectFields(typedProject);
+const fieldLabel = getTopicLabel(project.data.field);
+const topicSlugs = [project.data.field, ...project.data.topics];
+const updateEntries = getLedger(
+  { projects: [typedProject], writing: [], reviews: [], now: [] },
+  { projectSlug: slugFromEntry(project) },
+);
+const relatedWriting = writing.filter((entry) =>
+  project.data.relatedWriting.includes(slugFromEntry(entry)),
+);
+
+const metadataItems = [
+  { label: 'Status', value: labelFromSlug(project.data.status) },
+  {
+    label: 'Started',
+    value: formatDate(project.data.started),
+    type: 'mono' as const,
+  },
+  { label: 'Updated', value: derived.updatedIso, type: 'mono' as const },
+  { label: 'Field', value: fieldLabel },
+  { label: 'Type', value: labelFromSlug(project.data.type) },
+  {
+    label: 'Updates',
+    value: String(derived.updateCount),
+    type: 'mono' as const,
+  },
+];
+
+function getTopicLabel(slug: string) {
+  return (
+    topics.find((topic) => topic.data.slug === slug)?.data.label ??
+    labelFromSlug(slug)
+  );
+}
+---
+
+<BaseLayout
+  title={`${project.data.title} — Projects — The Starkonium Times`}
+  description={project.data.thesis}
+>
+  <Container as="article" class="project-detail">
+    <PageHeader
+      eyebrow="Project record"
+      title={project.data.title}
+      standfirst={project.data.thesis}
+      updated={derived.updatedAt}
+    >
+      <ProjectStatusStamp slot="action" status={project.data.status} />
+    </PageHeader>
+
+    <section class="project-detail__record" aria-label="Project metadata">
+      <MetadataList items={metadataItems} />
+      <TopicList slugs={topicSlugs} topics={topics} max={8} />
+    </section>
+
+    {
+      bodyHtml && (
+        <section
+          class="project-detail__body flow"
+          aria-label="Project notes"
+          set:html={bodyHtml}
+        />
+      )
+    }
+
+    {
+      project.data.outputs.length > 0 && (
+        <section class="project-detail__section" aria-labelledby="outputs">
+          <SectionHeader id="outputs" title="Outputs" level={2} />
+          <ul class="project-detail__list">
+            {project.data.outputs.map((output) => (
+              <li>
+                <h2>
+                  {output.url ? (
+                    <a href={output.url}>{output.title}</a>
+                  ) : (
+                    output.title
+                  )}
+                </h2>
+                <p>
+                  {labelFromSlug(output.kind)}
+                  {output.venue ? ` · ${output.venue}` : ''}
+                  {output.date ? ` · ${formatDate(output.date)}` : ''}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      project.data.repositories.length > 0 && (
+        <section class="project-detail__section" aria-labelledby="repositories">
+          <SectionHeader id="repositories" title="Repositories" level={2} />
+          <ul class="project-detail__list">
+            {project.data.repositories.map((repository) => (
+              <li>
+                <h2>
+                  <a href={repository.url}>{repository.name}</a>
+                </h2>
+                {repository.description && <p>{repository.description}</p>}
+                <p>
+                  {[repository.language, repository.license]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      relatedWriting.length > 0 && (
+        <section
+          class="project-detail__section"
+          aria-labelledby="related-writing"
+        >
+          <SectionHeader
+            id="related-writing"
+            title="Related writing"
+            level={2}
+          />
+          <ul class="project-detail__list">
+            {relatedWriting.map((entry) => (
+              <li>
+                <h2>
+                  <a href={`/writing/${slugFromEntry(entry)}`}>
+                    {entry.data.title}
+                  </a>
+                </h2>
+                <p>{entry.data.standfirst}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      updateEntries.length > 0 && (
+        <section
+          class="project-detail__section"
+          id="updates"
+          aria-labelledby="updates-title"
+        >
+          <SectionHeader id="updates-title" title="Updates" level={2} />
+          <Ledger entries={updateEntries} />
+        </section>
+      )
+    }
+
+    <EditorialRule variant="double" decorative />
+  </Container>
+</BaseLayout>
+
+<style>
+  .project-detail {
+    display: grid;
+    gap: var(--space-8);
+    padding-block: clamp(var(--space-7), 8vw, var(--space-11));
+  }
+
+  .project-detail__record {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .project-detail__body {
+    --flow-space: var(--space-4);
+    border-block: 1px solid var(--rule);
+    max-inline-size: var(--w-reading);
+    padding-block: var(--space-6);
+  }
+
+  .project-detail__body :global(h2),
+  .project-detail__body :global(h3) {
+    font-family: var(--font-interface);
+    font-size: var(--step-0);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .project-detail__body :global(p) {
+    color: var(--ink-700);
+  }
+
+  .project-detail__section {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .project-detail__list {
+    display: grid;
+    gap: var(--space-4);
+    list-style: none;
+    padding: 0;
+  }
+
+  .project-detail__list li {
+    border-block-end: 1px solid var(--rule);
+    display: grid;
+    gap: var(--space-2);
+    padding-block-end: var(--space-4);
+  }
+
+  .project-detail__list h2 {
+    font-size: var(--step-1);
+  }
+
+  .project-detail__list h2 a {
+    color: var(--ink-900);
+    text-decoration: none;
+  }
+
+  .project-detail__list p {
+    color: var(--ink-700);
+  }
+</style>
