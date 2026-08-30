@@ -148,6 +148,105 @@ test('homepage project links resolve to built project routes', async ({
   ).toBeVisible();
 });
 
+test('writing index renders feed entries and kind filtering', async ({
+  page,
+}) => {
+  const response = await page.goto('/writing');
+
+  expect(response?.ok()).toBe(true);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Writing' }),
+  ).toBeVisible();
+  await expect(page.getByText('Short Fixture Note')).toBeVisible();
+  await expect(
+    page.getByText('A Fictional Paper for Schema Tests'),
+  ).toBeVisible();
+  await expect(page.getByText('Draft Fixture Note')).toHaveCount(0);
+  await expect(page.getByText('Volume I').first()).toBeVisible();
+  await expect(page.getByText(/\b(old|legacy|archived)\b/i)).toHaveCount(0);
+
+  await page.getByRole('link', { name: 'Reviews' }).click();
+  await expect(page).toHaveURL(/kind=review/);
+  await expect(
+    page.getByText('A Fictional Paper for Schema Tests'),
+  ).toBeVisible();
+  await expect(
+    page.locator('[data-writing-item][data-kind="short"]').first(),
+  ).toBeHidden();
+});
+
+test('writing detail pages render prose, metadata, and optional foot sections', async ({
+  page,
+}) => {
+  const response = await page.goto('/writing/long-essay');
+
+  expect(response?.ok()).toBe(true);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Long Essay Fixture' }),
+  ).toBeVisible();
+  await expect(page.getByText('A fixture with a job')).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: 'A fixture with a job' }),
+  ).toBeVisible();
+  await expect(page.locator('[data-reading-progress]')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Revisions' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Related' })).toBeVisible();
+});
+
+test('short and minimal writing pages omit empty article machinery', async ({
+  page,
+}) => {
+  const short = await page.goto('/writing/short-note');
+
+  expect(short?.ok()).toBe(true);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Short Fixture Note' }),
+  ).toBeVisible();
+  await expect(page.locator('[data-reading-progress]')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Related' })).toHaveCount(0);
+
+  const minimal = await page.goto('/writing/article-no-metadata');
+
+  expect(minimal?.ok()).toBe(true);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Minimal Writing Fixture' }),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Revisions' })).toHaveCount(0);
+});
+
+test('writing technical fixture ships no KaTeX or Shiki client requests', async ({
+  page,
+}) => {
+  const clientLibraryRequests: string[] = [];
+  page.on('request', (request) => {
+    const url = request.url();
+    if (/katex|shiki/i.test(url)) {
+      clientLibraryRequests.push(url);
+    }
+  });
+
+  const response = await page.goto('/writing/technical-article');
+
+  expect(response?.ok()).toBe(true);
+  await expect(page.getByText('score = Σ fake_observation / n')).toBeVisible();
+  expect(clientLibraryRequests).toHaveLength(0);
+});
+
+test('draft writing page stays unpublished and homepage writing link resolves', async ({
+  page,
+}) => {
+  const draft = await page.goto('/writing/draft-note');
+
+  expect(draft?.status()).toBe(404);
+
+  await page.goto('/');
+  await page.getByRole('link', { name: 'All writing' }).click();
+  await expect(page).toHaveURL(/\/writing$/);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Writing' }),
+  ).toBeVisible();
+});
+
 test('dev component showcase renders Phase 3 examples', async ({ page }) => {
   const response = await page.goto('/dev/components');
 

@@ -6,15 +6,18 @@ public research notebook built from Markdown and MDX in Git.
 
 ## Current status
 
-Phase 5 projects. The repository contains the first real homepage structure,
-the public projects index, project detail pages, the content model, and the core
-reusable component set needed by later pages. Published pages are sourced from
-fake fixtures and provisional copy. No writing detail pages, review detail
+Phase 6 writing. The repository contains the first real homepage structure,
+public project pages, the writing index, writing detail pages, the content
+model, and the core reusable component set needed by later pages. Published
+pages are sourced from fake fixtures and provisional copy. No review detail
 pages, search implementation, RSS, sitemap, migration, packaging, or deployment
 work has started.
 
 The live Blogger site and the `starkonium.com` domain are untouched. Current
 work does not modify Blogger, DNS, or any production deployment.
+
+No GitHub remote is configured by default. Until a remote is added and branches
+are pushed, commits exist only in the local repository on this machine.
 
 ## Resolved versions
 
@@ -97,6 +100,7 @@ src/layouts/              Base page layout
 src/lib/                  Shared shell constants and smoke-test data
 src/pages/index.astro     Phase 4 homepage assembled from fixture content
 src/pages/projects/       Phase 5 project index and detail routes
+src/pages/writing/        Phase 6 writing index and article routes
 src/pages/dev/            Noindexed internal component showcase
 src/styles/               Layered global CSS tokens, reset, base, layout, utilities, print
 src/utils/                Content schemas, validators, derived fields, Ledger utilities
@@ -130,6 +134,15 @@ filters. With JavaScript disabled, all public projects remain visible. Project
 detail pages render frontmatter metadata, topics, optional body prose, outputs,
 repositories, related writing links, and update rows when those fields exist.
 Draft project fixtures do not generate public detail pages.
+
+## Writing
+
+Phase 6 adds `/writing` and `/writing/[slug]`. The index groups published
+writing and reviews by year, includes a kind-only progressive filter, keeps
+Volume I entries in the normal feed at full contrast, and highlights up to two
+featured entries. Writing detail pages render the article header, topic chips,
+the prose typography system, optional contents, reading metadata for longer
+pieces, revisions, related writing, and series navigation when data exists.
 
 ## Content fixtures
 
