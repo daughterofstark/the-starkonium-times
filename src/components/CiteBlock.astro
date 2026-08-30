@@ -1,0 +1,58 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  date: Date;
+  note: string;
+  doi?: string | undefined;
+}
+
+const { id, title, date, note, doi } = Astro.props as Props;
+const year = date.getUTCFullYear();
+const bibtex = [
+  `@misc{${id.toLowerCase()},`,
+  `  title = {${title}},`,
+  '  author = {Sharma, Medha},',
+  `  year = {${year}},`,
+  `  note = {${note}},`,
+  doi ? `  related = {https://doi.org/${doi}},` : '',
+  '}',
+]
+  .filter(Boolean)
+  .join('\n');
+---
+
+<section class="cite-block" aria-labelledby="citation">
+  <h2 id="citation">Citation</h2>
+  <p>
+    Medha Sharma. “{title}.” <cite>The Starkonium Times</cite>, {year}.
+  </p>
+  <pre><code>{bibtex}</code></pre>
+</section>
+
+<style>
+  .cite-block {
+    border-block: 1px solid var(--rule-strong);
+    display: grid;
+    gap: var(--space-4);
+    padding-block: var(--space-5);
+  }
+
+  .cite-block h2 {
+    font-family: var(--font-interface);
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .cite-block p {
+    color: var(--ink-700);
+  }
+
+  .cite-block pre {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    overflow-x: auto;
+    padding: var(--space-4);
+  }
+</style>

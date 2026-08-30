@@ -1,0 +1,225 @@
+---
+import { getCollection } from 'astro:content';
+
+import Container from '../../components/Container.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ReviewPreview from '../../components/ReviewPreview.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { ContentEntry } from '../../utils/content';
+import type { ReviewData, TopicData } from '../../utils/content-schemas';
+import { labelFromSlug } from '../../utils/format';
+import {
+  getReviewFieldOptions,
+  getReviewVerdictOptions,
+  selectReviewIndexEntries,
+} from '../../utils/reviews';
+
+const reviewEntries = (await getCollection(
+  'reviews',
+)) as ContentEntry<ReviewData>[];
+const topics = (await getCollection('topics')) as ContentEntry<TopicData>[];
+const reviews = selectReviewIndexEntries(reviewEntries);
+const verdictOptions = getReviewVerdictOptions(reviews);
+const fieldOptions = getReviewFieldOptions(reviews);
+
+function getTopicLabel(slug: string) {
+  return (
+    topics.find((topic) => topic.data.slug === slug)?.data.label ??
+    labelFromSlug(slug)
+  );
+}
+---
+
+<BaseLayout
+  title="Paper reviews — The Starkonium Times"
+  description="Paper reviews from The Starkonium Times, listed as editorial records."
+>
+  <Container as="section" class="reviews-index" aria-label="Paper reviews">
+    <PageHeader
+      eyebrow="Paper reviews"
+      title="Paper reviews"
+      standfirst="Structured paper notes with prose verdicts first, metadata second, and no aggregate numeric score."
+    />
+
+    <form class="reviews-filter" data-review-filter aria-label="Review filters">
+      <div>
+        <label for="review-verdict">Verdict</label>
+        <select id="review-verdict" name="verdict">
+          <option value="">All verdicts</option>
+          {
+            verdictOptions.map((option) => (
+              <option value={option.value}>{option.label}</option>
+            ))
+          }
+        </select>
+      </div>
+      <div>
+        <label for="review-field">Field</label>
+        <select id="review-field" name="field">
+          <option value="">All fields</option>
+          {
+            fieldOptions.map((field) => (
+              <option value={field}>{getTopicLabel(field)}</option>
+            ))
+          }
+        </select>
+      </div>
+      <a href="/reviews">Clear filters</a>
+    </form>
+
+    <SectionHeader
+      id="review-records"
+      title="Review records"
+      intro="Reverse-chronological by review date."
+    />
+
+    <p class="reviews-index__count">
+      <span data-review-count>{reviews.length}</span>
+      <span data-review-count-label>
+        {reviews.length === 1 ? 'review' : 'reviews'}
+      </span>
+    </p>
+
+    <div class="reviews-list" aria-labelledby="review-records">
+      {
+        reviews.length > 0 ? (
+          reviews.map((review) => (
+            <div
+              data-review-item
+              data-verdict={review.data.verdict}
+              data-field={review.data.field}
+            >
+              <ReviewPreview review={review} topics={topics} />
+            </div>
+          ))
+        ) : (
+          <EmptyState message="No public reviews are ready yet." />
+        )
+      }
+    </div>
+
+    <div class="reviews-empty" data-review-empty hidden>
+      <EmptyState
+        message="No reviews match those filters."
+        action={{ label: 'Clear filters', href: '/reviews' }}
+      />
+    </div>
+  </Container>
+</BaseLayout>
+
+<script is:inline>
+  const form = document.querySelector('[data-review-filter]');
+  const verdictControl = document.querySelector('#review-verdict');
+  const fieldControl = document.querySelector('#review-field');
+  const items = Array.from(document.querySelectorAll('[data-review-item]'));
+  const count = document.querySelector('[data-review-count]');
+  const countLabel = document.querySelector('[data-review-count-label]');
+  const empty = document.querySelector('[data-review-empty]');
+
+  function applyFilters() {
+    const verdict = verdictControl.value;
+    const field = fieldControl.value;
+    let visibleCount = 0;
+
+    for (const item of items) {
+      const visible =
+        (!verdict || item.dataset.verdict === verdict) &&
+        (!field || item.dataset.field === field);
+      item.hidden = !visible;
+      if (visible) visibleCount += 1;
+    }
+
+    count.textContent = String(visibleCount);
+    countLabel.textContent = visibleCount === 1 ? 'review' : 'reviews';
+    empty.hidden = visibleCount > 0;
+
+    const url = new URL(window.location.href);
+    if (verdict) {
+      url.searchParams.set('verdict', verdict);
+    } else {
+      url.searchParams.delete('verdict');
+    }
+    if (field) {
+      url.searchParams.set('field', field);
+    } else {
+      url.searchParams.delete('field');
+    }
+    window.history.replaceState({}, '', url);
+  }
+
+  if (form && verdictControl && fieldControl && count && countLabel && empty) {
+    form.addEventListener('change', applyFilters);
+    const params = new URLSearchParams(window.location.search);
+    verdictControl.value = params.get('verdict') ?? '';
+    fieldControl.value = params.get('field') ?? '';
+    applyFilters();
+  }
+</script>
+
+<style>
+  .reviews-index {
+    display: grid;
+    gap: var(--space-7);
+    padding-block: clamp(var(--space-7), 8vw, var(--space-11));
+  }
+
+  .reviews-filter {
+    align-items: end;
+    border-block: 1px solid var(--rule-strong);
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: repeat(2, minmax(10rem, 1fr)) auto;
+    padding-block: var(--space-4);
+  }
+
+  .reviews-filter div {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .reviews-filter label,
+  .reviews-filter a,
+  .reviews-index__count {
+    color: var(--ink-500);
+    font-family: var(--font-interface);
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .reviews-filter select {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule-strong);
+    border-radius: 0;
+    color: var(--ink-900);
+    font: inherit;
+    min-block-size: 2.75rem;
+    padding: 0 var(--space-3);
+  }
+
+  .reviews-filter a {
+    color: var(--orange-ink);
+    padding-block: var(--space-3);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.22em;
+  }
+
+  .reviews-list {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  [data-review-item][hidden],
+  [data-review-empty][hidden] {
+    display: none;
+  }
+
+  @media (max-width: 46rem) {
+    .reviews-filter {
+      align-items: stretch;
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

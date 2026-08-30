@@ -1,9 +1,11 @@
 ---
 import ArticleMetadata from './ArticleMetadata.astro';
+import AssessmentStrip from './AssessmentStrip.astro';
 import TopicList from './TopicList.astro';
 import type { ContentEntry } from '../utils/content';
 import type { ReviewData, TopicData } from '../utils/content-schemas';
 import { formatList } from '../utils/format';
+import { getDoiHref } from '../utils/reviews';
 
 interface Props {
   review: ContentEntry<ReviewData>;
@@ -20,19 +22,31 @@ const paperContext = [
 ]
   .filter(Boolean)
   .join(' · ');
+const verdict = review.data.verdict.replaceAll('-', ' ');
 ---
 
 <article class="review-preview">
   <ArticleMetadata kind="Review" date={review.data.reviewed} />
+  <p class="review-preview__verdict">{verdict}</p>
   <h2><a href={href}>{paper.title}</a></h2>
-  <p class="review-preview__paper">{paperContext}</p>
-  <p class="review-preview__verdict">{review.data.verdict}</p>
+  <p class="review-preview__paper">
+    {paperContext}
+    {
+      paper.doi && (
+        <>
+          {' · '}
+          <a href={getDoiHref(paper.doi)}>doi:{paper.doi}</a>
+        </>
+      )
+    }
+  </p>
   <p>{review.data.verdictLine}</p>
   <TopicList
     slugs={[review.data.field, ...review.data.topics]}
     topics={topics}
     max={5}
   />
+  <AssessmentStrip assessment={review.data.assessment} />
 </article>
 
 <style>

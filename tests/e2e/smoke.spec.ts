@@ -232,6 +232,72 @@ test('writing technical fixture ships no KaTeX or Shiki client requests', async 
   expect(clientLibraryRequests).toHaveLength(0);
 });
 
+test('reviews index renders records and enhances filters', async ({ page }) => {
+  const response = await page.goto('/reviews');
+
+  expect(response?.ok()).toBe(true);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Paper reviews' }),
+  ).toBeVisible();
+  await expect(
+    page.getByText('A Fictional Paper for Schema Tests'),
+  ).toBeVisible();
+  await expect(page.getByText('doi:10.1234/fixture.paper')).toBeVisible();
+
+  await page.getByLabel('Verdict').selectOption('flawed-but-useful');
+  await expect(page).toHaveURL(/verdict=flawed-but-useful/);
+  await expect(
+    page.getByText('A Fictional Paper for Schema Tests'),
+  ).toBeVisible();
+
+  await page.getByLabel('Field').selectOption('structural-biology');
+  await expect(page).toHaveURL(/field=structural-biology/);
+  await page.getByRole('link', { name: 'Clear filters' }).click();
+  await expect(page).toHaveURL(/\/reviews$/);
+});
+
+test('review detail renders prose verdict, record, assessment, reproduction, and citation', async ({
+  page,
+}) => {
+  const response = await page.goto('/reviews/complete-review');
+
+  expect(response?.ok()).toBe(true);
+  await expect(
+    page.getByRole('heading', {
+      level: 1,
+      name: 'A Fictional Paper for Schema Tests',
+    }),
+  ).toBeVisible();
+  await expect(page.locator('meta[name="citation_doi"]')).toHaveAttribute(
+    'content',
+    '10.1234/fixture.paper',
+  );
+  await expect(
+    page.getByRole('link', { name: 'doi:10.1234/fixture.paper' }),
+  ).toHaveAttribute('href', 'https://doi.org/10.1234/fixture.paper');
+  await expect(page.getByRole('heading', { name: 'Verdict' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Assessment' })).toBeVisible();
+  await expect(
+    page.getByRole('img', { name: /Evidence: 3 out of 5/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Reproducibility record' }),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Citation' })).toBeVisible();
+});
+
+test('writing feed review link resolves to the review detail page', async ({
+  page,
+}) => {
+  await page.goto('/writing');
+  await page
+    .getByRole('link', { name: 'A Fictional Paper for Schema Tests' })
+    .click();
+
+  await expect(page).toHaveURL(/\/reviews\/complete-review$/);
+  await expect(page.getByRole('heading', { name: 'Verdict' })).toBeVisible();
+});
+
 test('draft writing page stays unpublished and homepage writing link resolves', async ({
   page,
 }) => {

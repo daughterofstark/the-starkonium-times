@@ -6,18 +6,18 @@ public research notebook built from Markdown and MDX in Git.
 
 ## Current status
 
-Phase 6 writing. The repository contains the first real homepage structure,
-public project pages, the writing index, writing detail pages, the content
-model, and the core reusable component set needed by later pages. Published
-pages are sourced from fake fixtures and provisional copy. No review detail
-pages, search implementation, RSS, sitemap, migration, packaging, or deployment
-work has started.
+Phase 7 reviews. The repository contains the first real homepage structure,
+public project pages, writing pages, paper review pages, the content model, and
+the core reusable component set needed by later pages. Published pages are
+sourced from fake fixtures and provisional copy. No search implementation, RSS,
+sitemap, migration, packaging, or deployment work has started.
 
 The live Blogger site and the `starkonium.com` domain are untouched. Current
 work does not modify Blogger, DNS, or any production deployment.
 
-No GitHub remote is configured by default. Until a remote is added and branches
-are pushed, commits exist only in the local repository on this machine.
+The local repository is connected to
+`https://github.com/daughterofstark/the-starkonium-times.git` as `origin`.
+Pushing branches to GitHub does not deploy the site or touch Blogger/DNS.
 
 ## Resolved versions
 
@@ -100,6 +100,7 @@ src/layouts/              Base page layout
 src/lib/                  Shared shell constants and smoke-test data
 src/pages/index.astro     Phase 4 homepage assembled from fixture content
 src/pages/projects/       Phase 5 project index and detail routes
+src/pages/reviews/        Phase 7 paper review index and detail routes
 src/pages/writing/        Phase 6 writing index and article routes
 src/pages/dev/            Noindexed internal component showcase
 src/styles/               Layered global CSS tokens, reset, base, layout, utilities, print
@@ -122,9 +123,8 @@ as planning inputs for later phases.
 Phase 4 replaces the temporary placeholder with a v1 editorial front page at
 `/`. It includes an opening statement, recent Ledger entries, the newest Now
 entry, selected projects, latest writing/review fixtures, and short
-About/contact sections. Links to future routes such as `/writing`, `/reviews`,
-`/log`, `/cv`, and `/rss.xml` remain placeholders until later phases create
-those routes.
+About/contact sections. Links to future routes such as `/log`, `/cv`, and
+`/rss.xml` remain placeholders until later phases create those routes.
 
 ## Projects
 
@@ -143,6 +143,17 @@ Volume I entries in the normal feed at full contrast, and highlights up to two
 featured entries. Writing detail pages render the article header, topic chips,
 the prose typography system, optional contents, reading metadata for longer
 pieces, revisions, related writing, and series navigation when data exists.
+
+## Paper reviews
+
+Phase 7 adds `/reviews` and `/reviews/[slug]`. The index lists non-draft review
+fixtures in reverse review-date order with progressive verdict and field
+filters. With JavaScript disabled, all public reviews remain visible. Review
+detail pages render prose-first verdicts, a mono record block, paper
+availability, assessment strips with accessible labels, reproduction notes,
+body prose, DOI citation metadata, and a reusable citation block. The review
+pages intentionally avoid aggregate numeric ratings and structured rating
+metadata.
 
 ## Content fixtures
 
