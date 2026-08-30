@@ -3,7 +3,7 @@ id: WRT-002
 title: Volume One Fixture
 kind: essay
 published: 2022-05-05
-standfirst: This fake older post proves Volume I writing can preserve an original Blogger URL for future redirects.
+standfirst: This fake earlier post proves Volume I writing can preserve an original Blogger URL for future redirects.
 topics:
   - writing-process
 volume: one

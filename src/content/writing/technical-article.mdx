@@ -1,0 +1,49 @@
+---
+id: WRT-005
+title: Technical Article Fixture
+kind: explainer
+published: 2026-06-10
+standfirst: This fake technical article exercises code blocks, tables, static equation markup, and build-time rendering without loading math or syntax client libraries.
+topics:
+  - reproducibility
+  - pytorch
+relatedProjects:
+  - comprehensive-project
+featured: true
+draft: false
+---
+
+This technical fixture is not teaching a real method. It gives the page a table,
+code blocks, and static equation-like markup so the build can prove that
+technical prose remains readable without client-side math or syntax packages.
+
+## Code and tables
+
+```ts
+export function fixtureScore(values: number[]) {
+  return values.reduce((total, value) => total + value, 0) / values.length;
+}
+```
+
+```py
+def fixture_score(values):
+    return sum(values) / len(values)
+```
+
+| Input  | Output | Note          |
+| ------ | ------ | ------------- |
+| fake-a | 0.42   | deterministic |
+| fake-b | 0.58   | placeholder   |
+
+## Static equation markup
+
+<span
+  class="math-display"
+  role="img"
+  aria-label="Fixture score equals the sum of fake observations divided by count."
+>
+  score = Σ fake_observation / n
+</span>
+
+The equation is also stated in prose: the fake score is the average of fake
+observations. There is no KaTeX or Shiki client script involved in this phase.

@@ -1,0 +1,405 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+
+import ArticleMetadata from '../../components/ArticleMetadata.astro';
+import Container from '../../components/Container.astro';
+import EditorialRule from '../../components/EditorialRule.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import TopicList from '../../components/TopicList.astro';
+import WritingRow from '../../components/WritingRow.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { ContentEntry } from '../../utils/content';
+import { isPublished, slugFromEntry } from '../../utils/content';
+import type { TopicData, WritingData } from '../../utils/content-schemas';
+import { formatDate } from '../../utils/format';
+import {
+  getReadingMinutes,
+  getRelatedWriting,
+  getSeriesNavigation,
+  prepareProseHtml,
+  shouldShowReadingTime,
+} from '../../utils/writing';
+
+interface Props {
+  entry: CollectionEntry<'writing'>;
+}
+
+export async function getStaticPaths() {
+  const writing = await getCollection('writing');
+
+  return writing.filter(isPublished).map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props as Props;
+const typedEntry = entry as ContentEntry<WritingData>;
+const allWriting = (await getCollection(
+  'writing',
+)) as ContentEntry<WritingData>[];
+const topics = (await getCollection('topics')) as ContentEntry<TopicData>[];
+const renderedHtml = entry.rendered?.html ?? '';
+const prepared = prepareProseHtml(renderedHtml);
+const readingMinutes = getReadingMinutes(entry.body ?? '');
+const showReadingTime = shouldShowReadingTime(readingMinutes);
+const related = getRelatedWriting(typedEntry, allWriting);
+const seriesNavigation = getSeriesNavigation(typedEntry, allWriting);
+const hasFoot =
+  entry.data.revisions.length > 0 ||
+  related.length > 0 ||
+  Boolean(seriesNavigation?.previous || seriesNavigation?.next);
+---
+
+<BaseLayout
+  title={`${entry.data.title} — Writing — The Starkonium Times`}
+  description={entry.data.standfirst}
+>
+  {
+    showReadingTime && (
+      <div class="reading-progress" data-reading-progress aria-hidden="true" />
+    )
+  }
+
+  <Container as="article" class="article-page" aria-label={entry.data.title}>
+    <header class="article-header">
+      <ArticleMetadata
+        kind={entry.data.kind}
+        date={entry.data.published}
+        updated={entry.data.updated}
+        readingTime={showReadingTime ? readingMinutes : undefined}
+      />
+      <h1>{entry.data.title}</h1>
+      <p class="article-header__standfirst">{entry.data.standfirst}</p>
+      {
+        entry.data.volume === 'one' && (
+          <p class="article-header__volume">
+            Volume I · originally published elsewhere
+          </p>
+        )
+      }
+      <EditorialRule variant="strong" decorative />
+      <TopicList slugs={entry.data.topics} topics={topics} max={8} />
+    </header>
+
+    <div class="article-grid">
+      {
+        prepared.toc.length > 0 ? (
+          <details class="article-toc" open>
+            <summary>Contents</summary>
+            <ol>
+              {prepared.toc.map((item) => (
+                <li class:list={[item.depth === 3 && 'article-toc__subitem']}>
+                  <a href={`#${item.id}`}>{item.text}</a>
+                </li>
+              ))}
+            </ol>
+          </details>
+        ) : (
+          <aside class="article-toc article-toc--empty" aria-label="Contents">
+            <p>No contents for this short note.</p>
+          </aside>
+        )
+      }
+
+      <div
+        class="article-body prose"
+        data-article-body
+        set:html={prepared.html}
+      />
+
+      <aside class="article-margin" aria-label="Article margin">
+        {
+          entry.data.volume === 'one' ? (
+            <p>
+              Volume I entries remain in the normal feed at full contrast and
+              carry their original URL for later redirect work.
+            </p>
+          ) : (
+            <p>
+              Margin space is reserved for notes, citations, and reading aids as
+              longer articles mature.
+            </p>
+          )
+        }
+      </aside>
+    </div>
+
+    {
+      hasFoot ? (
+        <footer class="article-foot">
+          {entry.data.revisions.length > 0 && (
+            <section aria-labelledby="revisions">
+              <SectionHeader id="revisions" title="Revisions" level={2} />
+              <ol class="article-foot__list">
+                {entry.data.revisions.map((revision) => (
+                  <li>
+                    <time datetime={revision.date.toISOString()}>
+                      {formatDate(revision.date)}
+                    </time>
+                    <span>{revision.note}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+
+          {related.length > 0 && (
+            <section aria-labelledby="related">
+              <SectionHeader id="related" title="Related" level={2} />
+              <div class="article-foot__related">
+                {related.map((relatedEntry) => (
+                  <WritingRow entry={relatedEntry} showStandfirst={false} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {seriesNavigation &&
+            (seriesNavigation.previous || seriesNavigation.next) && (
+              <nav class="article-series" aria-label="Series navigation">
+                {seriesNavigation.previous ? (
+                  <a
+                    href={`/writing/${slugFromEntry(seriesNavigation.previous)}`}
+                  >
+                    ← {seriesNavigation.previous.data.title}
+                  </a>
+                ) : (
+                  <span />
+                )}
+                {seriesNavigation.next && (
+                  <a href={`/writing/${slugFromEntry(seriesNavigation.next)}`}>
+                    {seriesNavigation.next.data.title} →
+                  </a>
+                )}
+              </nav>
+            )}
+        </footer>
+      ) : null
+    }
+  </Container>
+</BaseLayout>
+
+<script is:inline>
+  const progress = document.querySelector('[data-reading-progress]');
+  const body = document.querySelector('[data-article-body]');
+  const reducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)',
+  ).matches;
+
+  function updateProgress() {
+    if (!progress || !body || reducedMotion) return;
+    const rect = body.getBoundingClientRect();
+    const total = rect.height - window.innerHeight;
+    const passed = Math.min(Math.max(-rect.top, 0), total);
+    const value = total > 0 ? passed / total : 0;
+    progress.style.transform = `scaleX(${value})`;
+  }
+
+  if (
+    progress &&
+    body &&
+    !reducedMotion &&
+    body.scrollHeight > window.innerHeight * 2
+  ) {
+    progress.hidden = false;
+    updateProgress();
+    window.addEventListener(
+      'scroll',
+      () => requestAnimationFrame(updateProgress),
+      {
+        passive: true,
+      },
+    );
+  }
+</script>
+
+<style>
+  .reading-progress {
+    background: var(--orange);
+    block-size: 2px;
+    inset-block-start: 0;
+    inset-inline: 0;
+    position: fixed;
+    transform: scaleX(0);
+    transform-origin: left center;
+    z-index: 10;
+  }
+
+  .reading-progress[hidden] {
+    display: none;
+  }
+
+  .article-page {
+    display: grid;
+    gap: var(--space-8);
+    padding-block: clamp(var(--space-7), 8vw, var(--space-11));
+  }
+
+  .article-header {
+    display: grid;
+    gap: var(--space-4);
+    max-inline-size: min(66ch, 680px);
+  }
+
+  .article-header h1 {
+    max-inline-size: 16ch;
+  }
+
+  .article-header__standfirst {
+    color: var(--ink-700);
+    font-size: var(--step-2);
+    font-style: italic;
+    line-height: 1.42;
+  }
+
+  .article-header__volume,
+  .article-toc,
+  .article-margin,
+  .article-foot__list,
+  .article-series {
+    font-family: var(--font-interface);
+    font-size: var(--step--1);
+    letter-spacing: 0.06em;
+  }
+
+  .article-header__volume {
+    color: var(--orange-ink);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .article-grid {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: minmax(0, 680px);
+  }
+
+  .article-toc {
+    color: var(--ink-500);
+  }
+
+  .article-toc summary {
+    color: var(--ink-900);
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+
+  .article-toc ol {
+    display: grid;
+    gap: var(--space-2);
+    list-style: none;
+    margin-block-start: var(--space-3);
+    padding: 0;
+  }
+
+  .article-toc a {
+    color: var(--ink-700);
+    text-decoration: none;
+  }
+
+  .article-toc__subitem {
+    padding-inline-start: var(--space-4);
+  }
+
+  .article-toc--empty {
+    display: none;
+  }
+
+  .article-margin {
+    color: var(--ink-500);
+  }
+
+  .article-margin p {
+    max-inline-size: 24ch;
+  }
+
+  .article-foot {
+    border-block-start: 1px solid var(--rule-strong);
+    display: grid;
+    gap: var(--space-7);
+    padding-block-start: var(--space-6);
+  }
+
+  .article-foot__list {
+    display: grid;
+    gap: var(--space-3);
+    list-style-position: inside;
+    margin-block-start: var(--space-4);
+    padding: 0;
+  }
+
+  .article-foot__list li {
+    border-block-end: 1px solid var(--rule);
+    display: grid;
+    gap: var(--space-2);
+    padding-block-end: var(--space-3);
+  }
+
+  .article-foot__list time {
+    color: var(--ink-500);
+  }
+
+  .article-foot__related {
+    display: grid;
+    margin-block-start: var(--space-4);
+  }
+
+  .article-series {
+    border-block: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    padding-block: var(--space-4);
+    text-transform: uppercase;
+  }
+
+  .article-series a {
+    color: var(--ink-900);
+    text-decoration: none;
+  }
+
+  @media (min-width: 64rem) {
+    .article-grid {
+      grid-template-columns: minmax(0, 680px) minmax(12rem, 15rem);
+    }
+
+    .article-margin {
+      padding-block-start: var(--space-2);
+    }
+  }
+
+  @media (min-width: 82rem) {
+    .article-grid {
+      grid-template-columns: 13.75rem minmax(0, 680px) 15rem;
+    }
+
+    .article-toc {
+      align-self: start;
+      inset-block-start: calc(var(--header-block-size) + var(--space-5));
+      position: sticky;
+    }
+  }
+
+  @media print {
+    .reading-progress,
+    .article-toc,
+    .article-margin {
+      display: none;
+    }
+
+    .article-page {
+      padding-block: 0;
+    }
+
+    .article-body {
+      max-inline-size: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reading-progress {
+      display: none;
+    }
+  }
+</style>

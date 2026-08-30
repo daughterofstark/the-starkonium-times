@@ -1,0 +1,194 @@
+@layer prose {
+  .prose {
+    color: var(--ink-900);
+    font-family: var(--font-reading);
+    font-size: 1.1875rem;
+    line-height: 1.65;
+    max-inline-size: min(66ch, 680px);
+  }
+
+  .prose > * + * {
+    margin-block-start: 1.5rem;
+  }
+
+  .prose p {
+    hyphens: none;
+    max-inline-size: none;
+    text-align: start;
+  }
+
+  .prose h2 {
+    border-block-start: 1px solid var(--rule);
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-block-start: 3.5rem;
+    padding-block-start: 1.25rem;
+    position: relative;
+  }
+
+  .prose h2::before {
+    color: var(--orange);
+    content: '▸';
+    font-family: var(--font-interface);
+    font-size: 0.75rem;
+    inset-block-start: 1.55rem;
+    inset-inline-start: -1.5rem;
+    position: absolute;
+  }
+
+  .prose h3 {
+    color: var(--ink-500);
+    font-family: var(--font-interface);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    margin-block-start: 2.25rem;
+    text-transform: uppercase;
+  }
+
+  .prose h4 {
+    font-family: var(--font-reading);
+    font-size: 1.1875rem;
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .prose strong {
+    color: inherit;
+    font-weight: 600;
+  }
+
+  .prose a {
+    color: var(--orange-ink);
+    text-decoration-color: var(--rule);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .prose ul,
+  .prose ol {
+    display: grid;
+    gap: 0.5rem;
+    padding-inline-start: 1.5rem;
+  }
+
+  .prose ul {
+    list-style: none;
+  }
+
+  .prose ul li {
+    position: relative;
+  }
+
+  .prose ul li::before {
+    color: var(--orange);
+    content: '▸';
+    font-family: var(--font-interface);
+    font-size: 0.75rem;
+    inset-block-start: 0.45em;
+    inset-inline-start: -1.35rem;
+    position: absolute;
+  }
+
+  .prose ol li::marker {
+    font-family: var(--font-interface);
+  }
+
+  .prose blockquote {
+    border-inline-start: 2px solid var(--rule);
+    color: var(--ink-700);
+    font-style: normal;
+    margin-inline: 0;
+    padding-inline-start: 1.5rem;
+  }
+
+  .prose :where(pre, table) {
+    font-size: 0.9rem;
+  }
+
+  .prose pre {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    overflow-x: auto;
+    padding: var(--space-4);
+  }
+
+  .prose code {
+    background: var(--paper-sunk);
+    padding: 0.05em 0.2em;
+  }
+
+  .prose pre code {
+    background: transparent;
+    padding: 0;
+  }
+
+  .prose table {
+    border-collapse: collapse;
+    inline-size: 100%;
+  }
+
+  .prose th,
+  .prose td {
+    border-block-end: 1px solid var(--rule);
+    padding: var(--space-2);
+    text-align: start;
+  }
+
+  .prose hr {
+    border: 0;
+    color: var(--orange);
+    margin-block: 2rem;
+    text-align: center;
+  }
+
+  .prose hr::after {
+    content: '‸ ‸ ‸';
+    font-family: var(--font-interface);
+    letter-spacing: 0.4em;
+  }
+
+  .prose .pull-quote {
+    border-block-start: 2px solid var(--orange);
+    font-family: var(--font-display);
+    font-size: 1.625rem;
+    font-weight: 500;
+    line-height: 1.25;
+    margin-inline-start: -40px;
+    padding-block-start: var(--space-4);
+  }
+
+  .prose .pull-quote cite {
+    color: var(--ink-500);
+    display: block;
+    font-family: var(--font-interface);
+    font-size: 0.75rem;
+    font-style: normal;
+    letter-spacing: 0.08em;
+    margin-block-start: var(--space-3);
+    text-transform: uppercase;
+  }
+
+  .prose .math-display {
+    border-block: 1px solid var(--rule);
+    display: block;
+    font-family: var(--font-code);
+    margin-block: var(--space-5);
+    overflow-x: auto;
+    padding-block: var(--space-4);
+    text-align: center;
+  }
+
+  @media (max-width: 52rem) {
+    .prose h2::before {
+      position: static;
+      margin-inline-end: var(--space-2);
+    }
+
+    .prose .pull-quote {
+      margin-inline-start: 0;
+    }
+  }
+}
