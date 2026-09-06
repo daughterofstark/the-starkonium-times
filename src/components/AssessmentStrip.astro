@@ -1,0 +1,113 @@
+---
+import type { ReviewData } from '../utils/content-schemas';
+import { labelFromSlug } from '../utils/format';
+
+interface Props {
+  assessment: ReviewData['assessment'];
+  detailed?: boolean;
+}
+
+const { assessment, detailed = false } = Astro.props as Props;
+const dimensions = Object.entries(assessment).map(([key, value]) => ({
+  key,
+  label: labelFromSlug(key),
+  score: value.score,
+  note: value.note,
+}));
+---
+
+<div
+  class:list={['assessment-strip', detailed && 'assessment-strip--detailed']}
+>
+  {
+    dimensions.map((dimension) => (
+      <div class="assessment-strip__dimension">
+        <span
+          class="assessment-strip__squares"
+          role="img"
+          aria-label={`${dimension.label}: ${dimension.score} out of 5. ${dimension.note}`}
+        >
+          {Array.from({ length: 5 }).map((_, index) => (
+            <span
+              class:list={[
+                'assessment-strip__square',
+                index < dimension.score && 'assessment-strip__square--filled',
+              ]}
+              aria-hidden="true"
+            />
+          ))}
+        </span>
+        <span class="assessment-strip__label">{dimension.label}</span>
+        {detailed && (
+          <span class="assessment-strip__note">{dimension.note}</span>
+        )}
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .assessment-strip {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .assessment-strip__dimension {
+    align-items: center;
+    display: grid;
+    gap: var(--space-2);
+    grid-template-columns: auto 1fr;
+  }
+
+  .assessment-strip__squares {
+    display: inline-flex;
+    gap: 0.18rem;
+  }
+
+  .assessment-strip__square {
+    border: 1px solid var(--ink-700);
+    block-size: 0.7rem;
+    inline-size: 0.7rem;
+  }
+
+  .assessment-strip__square--filled {
+    background: var(--ink-900);
+  }
+
+  .assessment-strip__label,
+  .assessment-strip__note {
+    font-family: var(--font-interface);
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .assessment-strip__label {
+    color: var(--ink-700);
+  }
+
+  .assessment-strip__note {
+    color: var(--ink-500);
+    grid-column: 1 / -1;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+    text-transform: none;
+  }
+
+  .assessment-strip--detailed {
+    border-block: 1px solid var(--rule-strong);
+    gap: var(--space-4);
+    padding-block: var(--space-5);
+  }
+
+  @media (min-width: 48rem) {
+    .assessment-strip:not(.assessment-strip--detailed) {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .assessment-strip:not(.assessment-strip--detailed)
+      .assessment-strip__dimension {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

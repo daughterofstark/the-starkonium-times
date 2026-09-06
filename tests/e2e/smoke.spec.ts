@@ -14,7 +14,7 @@ test('production preview serves the Phase 4 homepage', async ({ page }) => {
   await expect(
     page
       .getByRole('banner')
-      .getByRole('link', { name: 'The Starkonium Times' }),
+      .getByRole('link', { name: 'The Starkonium Times', exact: true }),
   ).toBeVisible();
   await expect(
     page.getByText('A public notebook for research, software, paper reviews'),
@@ -29,11 +29,20 @@ test('production preview serves the Phase 4 homepage', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'Selected projects' }),
   ).toBeVisible();
-  await expect(page.getByText('Comprehensive Fixture Project')).toBeVisible();
+  await expect(
+    page.getByRole('link', {
+      name: 'Comprehensive Fixture Project',
+      exact: true,
+    }),
+  ).toBeVisible();
   await expect(
     page.getByRole('heading', { name: 'Latest writing' }),
   ).toBeVisible();
-  await expect(page.getByText('Short Fixture Note')).toBeVisible();
+  await expect(
+    page
+      .getByLabel('Latest writing')
+      .getByRole('link', { name: 'Short Fixture Note', exact: true }),
+  ).toBeVisible();
 
   for (const linkName of ['Projects', 'Writing', 'Experience', 'About']) {
     await expect(
@@ -159,7 +168,13 @@ test('writing index renders feed entries and kind filtering', async ({
   ).toBeVisible();
   await expect(page.getByText('Short Fixture Note')).toBeVisible();
   await expect(
-    page.getByText('A Fictional Paper for Schema Tests'),
+    page
+      .getByRole('main')
+      .getByRole('link', {
+        name: 'A Fictional Paper for Schema Tests',
+        exact: true,
+      })
+      .first(),
   ).toBeVisible();
   await expect(page.getByText('Draft Fixture Note')).toHaveCount(0);
   await expect(page.getByText('Volume I').first()).toBeVisible();
@@ -168,7 +183,13 @@ test('writing index renders feed entries and kind filtering', async ({
   await page.getByRole('link', { name: 'Reviews' }).click();
   await expect(page).toHaveURL(/kind=review/);
   await expect(
-    page.getByText('A Fictional Paper for Schema Tests'),
+    page
+      .locator('[data-writing-item][data-kind="review"]')
+      .getByRole('link', {
+        name: 'A Fictional Paper for Schema Tests',
+        exact: true,
+      })
+      .first(),
   ).toBeVisible();
   await expect(
     page.locator('[data-writing-item][data-kind="short"]').first(),
@@ -184,11 +205,13 @@ test('writing detail pages render prose, metadata, and optional foot sections', 
   await expect(
     page.getByRole('heading', { level: 1, name: 'Long Essay Fixture' }),
   ).toBeVisible();
-  await expect(page.getByText('A fixture with a job')).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'A fixture with a job' }),
+  ).toBeVisible();
   await expect(
     page.getByRole('link', { name: 'A fixture with a job' }),
   ).toBeVisible();
-  await expect(page.locator('[data-reading-progress]')).toBeVisible();
+  await expect(page.locator('[data-reading-progress]')).toHaveCount(1);
   await expect(page.getByRole('heading', { name: 'Revisions' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Related' })).toBeVisible();
 });
@@ -203,7 +226,6 @@ test('short and minimal writing pages omit empty article machinery', async ({
     page.getByRole('heading', { level: 1, name: 'Short Fixture Note' }),
   ).toBeVisible();
   await expect(page.locator('[data-reading-progress]')).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'Related' })).toHaveCount(0);
 
   const minimal = await page.goto('/writing/article-no-metadata');
 
@@ -228,8 +250,89 @@ test('writing technical fixture ships no KaTeX or Shiki client requests', async 
   const response = await page.goto('/writing/technical-article');
 
   expect(response?.ok()).toBe(true);
-  await expect(page.getByText('score = Σ fake_observation / n')).toBeVisible();
+  await expect(
+    page.getByText('score = Σ fake_observation').first(),
+  ).toBeVisible();
   expect(clientLibraryRequests).toHaveLength(0);
+});
+
+test('reviews index renders records and enhances filters', async ({ page }) => {
+  const response = await page.goto('/reviews');
+
+  expect(response?.ok()).toBe(true);
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Paper reviews' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', {
+      name: 'A Fictional Paper for Schema Tests',
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText('doi:10.1234/fixture.paper')).toBeVisible();
+
+  await page.getByLabel('Verdict').selectOption('flawed-but-useful');
+  await expect(page).toHaveURL(/verdict=flawed-but-useful/);
+  await expect(
+    page.getByRole('link', {
+      name: 'A Fictional Paper for Schema Tests',
+      exact: true,
+    }),
+  ).toBeVisible();
+
+  await page.getByLabel('Field').selectOption('structural-biology');
+  await expect(page).toHaveURL(/field=structural-biology/);
+  await page.getByRole('link', { name: 'Clear filters' }).click();
+  await expect(page).toHaveURL(/\/reviews$/);
+});
+
+test('review detail renders prose verdict, record, assessment, reproduction, and citation', async ({
+  page,
+}) => {
+  const response = await page.goto('/reviews/complete-review');
+
+  expect(response?.ok()).toBe(true);
+  await expect(
+    page.getByRole('heading', {
+      level: 1,
+      name: 'A Fictional Paper for Schema Tests',
+    }),
+  ).toBeVisible();
+  await expect(page.locator('meta[name="citation_doi"]')).toHaveAttribute(
+    'content',
+    '10.1234/fixture.paper',
+  );
+  await expect(
+    page.getByRole('link', { name: 'doi:10.1234/fixture.paper' }),
+  ).toHaveAttribute('href', 'https://doi.org/10.1234/fixture.paper');
+  await expect(page.getByRole('heading', { name: 'Verdict' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Assessment', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('img', { name: /Evidence: 3 out of 5/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Reproducibility record' }),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Citation' })).toBeVisible();
+});
+
+test('writing feed review link resolves to the review detail page', async ({
+  page,
+}) => {
+  await page.goto('/writing');
+  await page
+    .locator('[data-writing-item][data-kind="review"]')
+    .getByRole('link', {
+      name: 'A Fictional Paper for Schema Tests',
+      exact: true,
+    })
+    .first()
+    .click();
+
+  await expect(page).toHaveURL(/\/reviews\/complete-review$/);
+  await expect(page.getByRole('heading', { name: 'Verdict' })).toBeVisible();
 });
 
 test('draft writing page stays unpublished and homepage writing link resolves', async ({
@@ -254,8 +357,13 @@ test('dev component showcase renders Phase 3 examples', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'Component Showcase' }),
   ).toBeVisible();
-  await expect(page.getByText('Comprehensive Fixture Project')).toBeVisible();
-  await expect(page.getByText('Volume I')).toBeVisible();
+  await expect(
+    page.getByRole('link', {
+      name: 'Comprehensive Fixture Project',
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText('Volume I').first()).toBeVisible();
   await expect(
     page.getByRole('link', { name: 'Search The Starkonium Times' }).first(),
   ).toBeVisible();

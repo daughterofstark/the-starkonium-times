@@ -1,6 +1,5 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry, render } from 'astro:content';
 
 import ArticleMetadata from '../../components/ArticleMetadata.astro';
 import Container from '../../components/Container.astro';
@@ -17,31 +16,32 @@ import {
   getReadingMinutes,
   getRelatedWriting,
   getSeriesNavigation,
-  prepareProseHtml,
   shouldShowReadingTime,
 } from '../../utils/writing';
-
-interface Props {
-  entry: CollectionEntry<'writing'>;
-}
 
 export async function getStaticPaths() {
   const writing = await getCollection('writing');
 
   return writing.filter(isPublished).map((entry) => ({
     params: { slug: entry.id },
-    props: { entry },
   }));
 }
 
-const { entry } = Astro.props as Props;
+const entry = await getEntry('writing', Astro.params.slug ?? '');
+
+if (!entry || !isPublished(entry)) {
+  return Astro.redirect('/404');
+}
+
 const typedEntry = entry as ContentEntry<WritingData>;
 const allWriting = (await getCollection(
   'writing',
 )) as ContentEntry<WritingData>[];
 const topics = (await getCollection('topics')) as ContentEntry<TopicData>[];
-const renderedHtml = entry.rendered?.html ?? '';
-const prepared = prepareProseHtml(renderedHtml);
+const { Content, headings } = await render(entry);
+const toc = headings.filter(
+  (heading) => heading.depth === 2 || heading.depth === 3,
+);
 const readingMinutes = getReadingMinutes(entry.body ?? '');
 const showReadingTime = shouldShowReadingTime(readingMinutes);
 const related = getRelatedWriting(typedEntry, allWriting);
@@ -85,13 +85,15 @@ const hasFoot =
 
     <div class="article-grid">
       {
-        prepared.toc.length > 0 ? (
+        toc.length > 0 ? (
           <details class="article-toc" open>
             <summary>Contents</summary>
             <ol>
-              {prepared.toc.map((item) => (
-                <li class:list={[item.depth === 3 && 'article-toc__subitem']}>
-                  <a href={`#${item.id}`}>{item.text}</a>
+              {toc.map((heading) => (
+                <li
+                  class:list={[heading.depth === 3 && 'article-toc__subitem']}
+                >
+                  <a href={`#${heading.slug}`}>{heading.text}</a>
                 </li>
               ))}
             </ol>
@@ -103,11 +105,9 @@ const hasFoot =
         )
       }
 
-      <div
-        class="article-body prose"
-        data-article-body
-        set:html={prepared.html}
-      />
+      <div class="article-body prose" data-article-body>
+        <Content />
+      </div>
 
       <aside class="article-margin" aria-label="Article margin">
         {

@@ -1,0 +1,291 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+
+import AssessmentStrip from '../../components/AssessmentStrip.astro';
+import CiteBlock from '../../components/CiteBlock.astro';
+import Container from '../../components/Container.astro';
+import EditorialRule from '../../components/EditorialRule.astro';
+import MetadataList from '../../components/MetadataList.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import TopicList from '../../components/TopicList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { ContentEntry } from '../../utils/content';
+import { isPublished } from '../../utils/content';
+import type { ReviewData, TopicData } from '../../utils/content-schemas';
+import { formatDate, labelFromSlug } from '../../utils/format';
+import {
+  formatAuthors,
+  getAvailability,
+  getDoiHref,
+  getMissingReviewSections,
+} from '../../utils/reviews';
+
+export async function getStaticPaths() {
+  const reviews = await getCollection('reviews');
+
+  return reviews.filter(isPublished).map((review) => ({
+    params: { slug: review.id },
+  }));
+}
+
+const review = await getEntry('reviews', Astro.params.slug ?? '');
+
+if (!review || !isPublished(review)) {
+  return Astro.redirect('/404');
+}
+
+const typedReview = review as ContentEntry<ReviewData>;
+const topics = (await getCollection('topics')) as ContentEntry<TopicData>[];
+const { Content } = await render(review);
+const missingSections = getMissingReviewSections(review.body ?? '');
+const availability = getAvailability(typedReview);
+const doi = review.data.paper.doi;
+const paper = review.data.paper;
+const recordItems = [
+  { label: 'Authors', value: formatAuthors(paper.authors) },
+  {
+    label: 'Venue',
+    value: [paper.journal, paper.volume, paper.pages]
+      .filter(Boolean)
+      .join(' · '),
+  },
+  { label: 'Year', value: String(paper.year), type: 'mono' as const },
+  {
+    label: 'DOI',
+    value: doi
+      ? { label: `doi:${doi}`, href: getDoiHref(doi) }
+      : 'none recorded',
+    type: doi ? ('link' as const) : ('text' as const),
+  },
+  {
+    label: 'Preprint',
+    value: paper.preprintUrl
+      ? { label: 'preprint link', href: paper.preprintUrl }
+      : 'none recorded',
+    type: paper.preprintUrl ? ('link' as const) : ('text' as const),
+  },
+  {
+    label: 'Reviewed',
+    value: formatDate(review.data.reviewed),
+    type: 'mono' as const,
+  },
+  { label: 'Relation', value: labelFromSlug(review.data.relation) },
+  {
+    label: 'Availability',
+    value: `code ${availability.code ? '✓' : '✗'} · data ${
+      availability.data ? '✓' : '✗'
+    }`,
+    type: 'mono' as const,
+  },
+];
+---
+
+<BaseLayout
+  title={`${paper.title} — Paper reviews — The Starkonium Times`}
+  description={review.data.verdictLine}
+>
+  {doi && <meta slot="head" name="citation_doi" content={doi} />}
+  <Container as="article" class="review-detail" aria-label={paper.title}>
+    <header class="review-detail__header">
+      <p class="review-detail__eyebrow">Paper review</p>
+      <div class="review-detail__title-row">
+        <div class="flow">
+          <h1>{paper.title}</h1>
+          <p class="review-detail__verdict-line">{review.data.verdictLine}</p>
+        </div>
+        <p class="review-detail__stamp">{labelFromSlug(review.data.verdict)}</p>
+      </div>
+      <EditorialRule variant="double" decorative />
+    </header>
+
+    <section class="review-record" aria-label="Review record">
+      <MetadataList items={recordItems} />
+      <TopicList
+        slugs={[review.data.field, ...review.data.topics]}
+        topics={topics}
+        variant="bordered"
+        max={8}
+      />
+      {
+        paper.authors.length > 6 && (
+          <details class="review-record__authors">
+            <summary>Full author list</summary>
+            <p>{paper.authors.join(', ')}</p>
+          </details>
+        )
+      }
+    </section>
+
+    <section class="review-body prose">
+      <Content />
+    </section>
+
+    <section class="review-assessment" aria-labelledby="assessment">
+      <SectionHeader
+        id="assessment"
+        title="Assessment"
+        intro="Each dimension is paired with its written justification."
+      />
+      <AssessmentStrip assessment={review.data.assessment} detailed />
+    </section>
+
+    {
+      review.data.reproduction && (
+        <section
+          class="review-reproduction"
+          aria-labelledby="reproduction-record"
+        >
+          <SectionHeader
+            id="reproduction-record"
+            title="Reproducibility record"
+          />
+          <div class="review-reproduction__grid">
+            <p>Code {availability.code ? 'available' : 'not recorded'}</p>
+            <p>Data {availability.data ? 'available' : 'not recorded'}</p>
+            <p>Attempted {review.data.reproduction.attempted ? 'yes' : 'no'}</p>
+            <p>Outcome {labelFromSlug(review.data.reproduction.outcome)}</p>
+          </div>
+          {review.data.reproduction.note && (
+            <p>{review.data.reproduction.note}</p>
+          )}
+        </section>
+      )
+    }
+
+    <CiteBlock
+      id={review.data.id}
+      title={`Review of ${paper.title}`}
+      date={review.data.reviewed}
+      note={`Review of ${paper.title}`}
+      doi={doi}
+    />
+
+    {
+      missingSections.length > 0 && (
+        <p class="review-detail__warning">
+          Fixture warning: missing {missingSections.join(', ')}.
+        </p>
+      )
+    }
+  </Container>
+</BaseLayout>
+
+<style>
+  .review-detail {
+    background: var(--paper-review);
+    display: grid;
+    gap: var(--space-8);
+    padding: clamp(var(--space-6), 6vw, var(--space-9));
+  }
+
+  .review-detail__header {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .review-detail__eyebrow,
+  .review-detail__stamp,
+  .review-detail__warning,
+  .review-record__authors {
+    font-family: var(--font-interface);
+    font-size: var(--step--1);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .review-detail__eyebrow {
+    color: var(--ink-500);
+  }
+
+  .review-detail__title-row {
+    align-items: end;
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .review-detail h1 {
+    max-inline-size: 18ch;
+  }
+
+  .review-detail__verdict-line {
+    color: var(--ink-700);
+    font-size: var(--step-1);
+  }
+
+  .review-detail__stamp {
+    border: 1px solid currentColor;
+    color: var(--orange-ink);
+    justify-self: start;
+    padding: var(--space-2) var(--space-3);
+    transform: rotate(-1.5deg);
+  }
+
+  .review-record,
+  .review-assessment,
+  .review-reproduction {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .review-record__authors {
+    color: var(--ink-700);
+  }
+
+  .review-record__authors p {
+    letter-spacing: 0;
+    margin-block-start: var(--space-2);
+    max-inline-size: var(--w-reading);
+    text-transform: none;
+  }
+
+  .review-body {
+    max-inline-size: min(66ch, 680px);
+  }
+
+  .review-body :global(h2:first-child) {
+    border-block: 1px solid var(--ink-900);
+    font-size: 1.25rem;
+    padding-block: var(--space-5);
+  }
+
+  .review-reproduction {
+    background: var(--paper-raised);
+    border: 2px solid var(--orange);
+    padding: var(--space-5);
+  }
+
+  .review-reproduction__grid {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .review-reproduction__grid p {
+    border-block-start: 1px solid var(--rule);
+    font-family: var(--font-interface);
+    font-size: var(--step--1);
+    letter-spacing: 0.08em;
+    padding-block-start: var(--space-3);
+    text-transform: uppercase;
+  }
+
+  .review-detail__warning {
+    color: var(--orange-ink);
+  }
+
+  @media (min-width: 48rem) {
+    .review-detail__title-row {
+      grid-template-columns: 1fr auto;
+    }
+  }
+
+  @media (max-width: 52rem) {
+    .review-detail {
+      padding-inline: var(--gutter);
+    }
+
+    .review-reproduction__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
