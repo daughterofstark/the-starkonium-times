@@ -1,6 +1,5 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry, render } from 'astro:content';
 
 import AssessmentStrip from '../../components/AssessmentStrip.astro';
 import CiteBlock from '../../components/CiteBlock.astro';
@@ -19,28 +18,25 @@ import {
   getAvailability,
   getDoiHref,
   getMissingReviewSections,
-  splitReviewHtmlSections,
 } from '../../utils/reviews';
-import { prepareProseHtml } from '../../utils/writing';
-
-interface Props {
-  review: CollectionEntry<'reviews'>;
-}
 
 export async function getStaticPaths() {
   const reviews = await getCollection('reviews');
 
   return reviews.filter(isPublished).map((review) => ({
     params: { slug: review.id },
-    props: { review },
   }));
 }
 
-const { review } = Astro.props as Props;
+const review = await getEntry('reviews', Astro.params.slug ?? '');
+
+if (!review || !isPublished(review)) {
+  return Astro.redirect('/404');
+}
+
 const typedReview = review as ContentEntry<ReviewData>;
 const topics = (await getCollection('topics')) as ContentEntry<TopicData>[];
-const prepared = prepareProseHtml(review.rendered?.html ?? '');
-const sections = splitReviewHtmlSections(prepared.html);
+const { Content } = await render(review);
 const missingSections = getMissingReviewSections(review.body ?? '');
 const availability = getAvailability(typedReview);
 const doi = review.data.paper.doi;
@@ -120,11 +116,9 @@ const recordItems = [
       }
     </section>
 
-    {
-      sections.verdict && (
-        <section class="review-verdict prose" set:html={sections.verdict} />
-      )
-    }
+    <section class="review-body prose">
+      <Content />
+    </section>
 
     <section class="review-assessment" aria-labelledby="assessment">
       <SectionHeader
@@ -155,12 +149,6 @@ const recordItems = [
             <p>{review.data.reproduction.note}</p>
           )}
         </section>
-      )
-    }
-
-    {
-      sections.remaining && (
-        <section class="review-body prose" set:html={sections.remaining} />
       )
     }
 
@@ -250,14 +238,14 @@ const recordItems = [
     text-transform: none;
   }
 
-  .review-verdict {
+  .review-body {
+    max-inline-size: min(66ch, 680px);
+  }
+
+  .review-body :global(h2:first-child) {
     border-block: 1px solid var(--ink-900);
     font-size: 1.25rem;
     padding-block: var(--space-5);
-  }
-
-  .review-verdict :global(h2) {
-    margin-block-start: 0;
   }
 
   .review-reproduction {
@@ -279,10 +267,6 @@ const recordItems = [
     letter-spacing: 0.08em;
     padding-block-start: var(--space-3);
     text-transform: uppercase;
-  }
-
-  .review-body {
-    max-inline-size: min(66ch, 680px);
   }
 
   .review-detail__warning {
