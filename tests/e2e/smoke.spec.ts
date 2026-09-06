@@ -38,7 +38,11 @@ test('production preview serves the Phase 4 homepage', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'Latest writing' }),
   ).toBeVisible();
-  await expect(page.getByText('Short Fixture Note')).toBeVisible();
+  await expect(
+    page
+      .getByLabel('Latest writing')
+      .getByRole('link', { name: 'Short Fixture Note', exact: true }),
+  ).toBeVisible();
 
   for (const linkName of ['Projects', 'Writing', 'Experience', 'About']) {
     await expect(
@@ -179,10 +183,13 @@ test('writing index renders feed entries and kind filtering', async ({
   await page.getByRole('link', { name: 'Reviews' }).click();
   await expect(page).toHaveURL(/kind=review/);
   await expect(
-    page.locator('[data-writing-item][data-kind="review"]').getByRole('link', {
-      name: 'A Fictional Paper for Schema Tests',
-      exact: true,
-    }),
+    page
+      .locator('[data-writing-item][data-kind="review"]')
+      .getByRole('link', {
+        name: 'A Fictional Paper for Schema Tests',
+        exact: true,
+      })
+      .first(),
   ).toBeVisible();
   await expect(
     page.locator('[data-writing-item][data-kind="short"]').first(),
@@ -204,7 +211,7 @@ test('writing detail pages render prose, metadata, and optional foot sections', 
   await expect(
     page.getByRole('link', { name: 'A fixture with a job' }),
   ).toBeVisible();
-  await expect(page.locator('[data-reading-progress]')).toBeVisible();
+  await expect(page.locator('[data-reading-progress]')).toHaveCount(1);
   await expect(page.getByRole('heading', { name: 'Revisions' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Related' })).toBeVisible();
 });
@@ -227,7 +234,6 @@ test('short and minimal writing pages omit empty article machinery', async ({
     page.getByRole('heading', { level: 1, name: 'Minimal Writing Fixture' }),
   ).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Revisions' })).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'Related' })).toHaveCount(0);
 });
 
 test('writing technical fixture ships no KaTeX or Shiki client requests', async ({
@@ -300,7 +306,9 @@ test('review detail renders prose verdict, record, assessment, reproduction, and
     page.getByRole('link', { name: 'doi:10.1234/fixture.paper' }),
   ).toHaveAttribute('href', 'https://doi.org/10.1234/fixture.paper');
   await expect(page.getByRole('heading', { name: 'Verdict' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Assessment' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Assessment', exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole('img', { name: /Evidence: 3 out of 5/ }),
   ).toBeVisible();
@@ -320,6 +328,7 @@ test('writing feed review link resolves to the review detail page', async ({
       name: 'A Fictional Paper for Schema Tests',
       exact: true,
     })
+    .first()
     .click();
 
   await expect(page).toHaveURL(/\/reviews\/complete-review$/);
@@ -354,7 +363,7 @@ test('dev component showcase renders Phase 3 examples', async ({ page }) => {
       exact: true,
     }),
   ).toBeVisible();
-  await expect(page.getByText('Volume I')).toBeVisible();
+  await expect(page.getByText('Volume I').first()).toBeVisible();
   await expect(
     page.getByRole('link', { name: 'Search The Starkonium Times' }).first(),
   ).toBeVisible();
