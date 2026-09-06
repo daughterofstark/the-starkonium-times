@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 
+import ContactBlock from '../components/ContactBlock.astro';
 import Container from '../components/Container.astro';
 import EditorialRule from '../components/EditorialRule.astro';
 import EmptyState from '../components/EmptyState.astro';
@@ -223,12 +224,7 @@ const nowItems = latestNow
     class="home-section home-contact"
     aria-labelledby="contact"
   >
-    <SectionHeader id="contact" title="Contact / external links" />
-    <ul class="home-contact__links" aria-label="Contact and external links">
-      <li><a href="https://github.com/">GitHub placeholder</a></li>
-      <li><a href="/cv">CV placeholder</a></li>
-      <li><a href="/rss.xml">RSS placeholder</a></li>
-    </ul>
+    <ContactBlock />
   </Container>
 </BaseLayout>
 
@@ -240,8 +236,7 @@ const nowItems = latestNow
 
   .home-opening__eyebrow,
   .home-now__meta,
-  .home-review__heading,
-  .home-contact__links {
+  .home-review__heading {
     font-family: var(--font-interface);
     font-size: var(--step--1);
     letter-spacing: 0.08em;
@@ -279,8 +274,7 @@ const nowItems = latestNow
   .home-now,
   .home-projects,
   .home-writing,
-  .home-about__grid,
-  .home-contact__links {
+  .home-about__grid {
     margin-block-start: var(--space-5);
   }
 
@@ -347,22 +341,6 @@ const nowItems = latestNow
     color: var(--ink-700);
     font-size: var(--step-1);
     max-inline-size: 52ch;
-  }
-
-  .home-contact__links {
-    border-block: 1px solid var(--rule);
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3) var(--space-6);
-    list-style: none;
-    padding: var(--space-4) 0;
-  }
-
-  .home-contact__links a {
-    color: var(--ink-900);
-    text-decoration-color: var(--orange);
-    text-decoration-thickness: 0.08em;
-    text-underline-offset: 0.22em;
   }
 
   @media (max-width: 52rem) {

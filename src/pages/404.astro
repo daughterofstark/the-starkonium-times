@@ -1,0 +1,59 @@
+---
+import Container from '../components/Container.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="No page here — The Starkonium Times"
+  description="The Starkonium Times could not find this page."
+  noindex
+>
+  <Container as="section" class="not-found" aria-label="Page not found">
+    <p class="not-found__mark">404</p>
+    <h1>No page here.</h1>
+    <p>This may be an old Starkonium Times link — try Volume I.</p>
+    <nav aria-label="Helpful links">
+      <a href="/archive">Archive</a>
+      <a href="/writing">Writing</a>
+      <a href="/search">Search</a>
+    </nav>
+  </Container>
+</BaseLayout>
+
+<style>
+  .not-found {
+    align-content: center;
+    display: grid;
+    gap: var(--space-5);
+    min-block-size: 60vh;
+    padding-block: clamp(var(--space-8), 10vw, var(--space-12));
+    text-align: center;
+  }
+
+  .not-found__mark,
+  .not-found nav {
+    font-family: var(--font-interface);
+    font-size: var(--step--1);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .not-found__mark {
+    color: var(--orange-ink);
+  }
+
+  .not-found p:not(.not-found__mark) {
+    color: var(--ink-700);
+  }
+
+  .not-found nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+    justify-content: center;
+  }
+
+  .not-found a {
+    color: var(--ink-900);
+  }
+</style>

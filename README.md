@@ -6,11 +6,12 @@ public research notebook built from Markdown and MDX in Git.
 
 ## Current status
 
-Phase 7 reviews. The repository contains the first real homepage structure,
-public project pages, writing pages, paper review pages, the content model, and
-the core reusable component set needed by later pages. Published pages are
-sourced from fake fixtures and provisional copy. No search implementation, RSS,
-sitemap, migration, packaging, or deployment work has started.
+Phase 8 personal pages. The repository contains the first real homepage
+structure, public project pages, writing pages, paper review pages, personal
+static pages, topic pages, the content model, and the core reusable component
+set needed by later pages. Published pages are sourced from fake fixtures and
+provisional copy. No search implementation, RSS, sitemap, migration, packaging,
+or deployment work has started.
 
 The live Blogger site and the `starkonium.com` domain are untouched. Current
 work does not modify Blogger, DNS, or any production deployment.
@@ -101,6 +102,7 @@ src/lib/                  Shared shell constants and smoke-test data
 src/pages/index.astro     Phase 4 homepage assembled from fixture content
 src/pages/projects/       Phase 5 project index and detail routes
 src/pages/reviews/        Phase 7 paper review index and detail routes
+src/pages/topics/         Phase 8 topic index and detail routes
 src/pages/writing/        Phase 6 writing index and article routes
 src/pages/dev/            Noindexed internal component showcase
 src/styles/               Layered global CSS tokens, reset, base, layout, utilities, print
@@ -123,7 +125,7 @@ as planning inputs for later phases.
 Phase 4 replaces the temporary placeholder with a v1 editorial front page at
 `/`. It includes an opening statement, recent Ledger entries, the newest Now
 entry, selected projects, latest writing/review fixtures, and short
-About/contact sections. Links to future routes such as `/log`, `/cv`, and
+About/contact sections. Links to future routes such as `/log`, `/cv.pdf`, and
 `/rss.xml` remain placeholders until later phases create those routes.
 
 ## Projects
@@ -154,6 +156,20 @@ availability, assessment strips with accessible labels, reproduction notes,
 body prose, DOI citation metadata, and a reusable citation block. The review
 pages intentionally avoid aggregate numeric ratings and structured rating
 metadata.
+
+## Personal pages and topics
+
+Phase 8 adds `/experience`, `/about`, `/now`, `/colophon`, `/topics`,
+`/topics/[slug]`, and `/404`. The experience page is a single no-JavaScript
+chronology using native details/summary disclosure. The Now page renders the
+newest Now entry and marks stale entries as overdue after 60 days. The About,
+homepage, and footer use one shared contact block with a plain-text placeholder
+email. There is intentionally no `/contact` route.
+
+`/topics` groups the controlled vocabulary by facet and shows reference counts.
+Each topic detail page groups public references by projects, writing, reviews,
+and experience. Search, RSS, sitemap output, `/now/archive`, and a hand-managed
+`/cv.pdf` are intentionally deferred.
 
 ## Content fixtures
 

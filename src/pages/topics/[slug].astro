@@ -1,0 +1,160 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+
+import Container from '../../components/Container.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { ContentEntry } from '../../utils/content';
+import type {
+  ExperienceData,
+  ProjectData,
+  ReviewData,
+  WritingData,
+} from '../../utils/content-schemas';
+import { formatDate } from '../../utils/format';
+import {
+  getTopicReferences,
+  groupTopicReferences,
+} from '../../utils/topic-pages';
+
+interface Props {
+  topic: CollectionEntry<'topics'>;
+}
+
+export async function getStaticPaths() {
+  const topics = await getCollection('topics');
+
+  return topics.map((topic) => ({
+    params: { slug: topic.data.slug },
+    props: { topic },
+  }));
+}
+
+const { topic } = Astro.props as Props;
+const projects = (await getCollection(
+  'projects',
+)) as ContentEntry<ProjectData>[];
+const writing = (await getCollection('writing')) as ContentEntry<WritingData>[];
+const reviews = (await getCollection('reviews')) as ContentEntry<ReviewData>[];
+const experience = (await getCollection(
+  'experience',
+)) as ContentEntry<ExperienceData>[];
+const references = getTopicReferences(topic.data.slug, {
+  projects,
+  writing,
+  reviews,
+  experience,
+});
+const groups = groupTopicReferences(references);
+const totalCount = references.length;
+---
+
+<BaseLayout
+  title={`${topic.data.label} — Topics — The Starkonium Times`}
+  description={topic.data.description ??
+    `${topic.data.label} references across The Starkonium Times.`}
+>
+  <Container as="section" class="topic-page" aria-label={topic.data.label}>
+    <PageHeader
+      eyebrow={`Topic · ${topic.data.facet}`}
+      title={topic.data.label}
+      {...topic.data.description ? { standfirst: topic.data.description } : {}}
+    />
+
+    <p class="topic-page__count">
+      {totalCount}
+      {totalCount === 1 ? 'reference' : 'references'}
+    </p>
+
+    {
+      totalCount > 0 ? (
+        <div class="topic-reference-groups">
+          {groups.map((group) => (
+            <section
+              class="topic-reference-group"
+              aria-labelledby={`topic-${group.type.toLowerCase()}`}
+            >
+              <SectionHeader
+                id={`topic-${group.type.toLowerCase()}`}
+                title={`${group.type} (${group.entries.length})`}
+                level={2}
+              />
+              <ul>
+                {group.entries.map((item) => (
+                  <li>
+                    <p class="topic-reference-group__meta">
+                      <time datetime={item.date.toISOString()}>
+                        {formatDate(item.date)}
+                      </time>
+                    </p>
+                    <h2>
+                      <a href={item.href}>{item.title}</a>
+                    </h2>
+                    {item.description && <p>{item.description}</p>}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <EmptyState message="No public entries reference this topic yet." />
+      )
+    }
+  </Container>
+</BaseLayout>
+
+<style>
+  .topic-page {
+    display: grid;
+    gap: var(--space-8);
+    padding-block: clamp(var(--space-7), 8vw, var(--space-11));
+  }
+
+  .topic-page__count,
+  .topic-reference-group__meta {
+    color: var(--orange-ink);
+    font-family: var(--font-interface);
+    font-size: var(--step--1);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .topic-reference-groups,
+  .topic-reference-group {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .topic-reference-group ul {
+    display: grid;
+    gap: var(--space-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .topic-reference-group li {
+    border-block-start: 1px solid var(--rule);
+    display: grid;
+    gap: var(--space-2);
+    padding-block-start: var(--space-4);
+  }
+
+  .topic-reference-group h2 {
+    font-size: var(--step-1);
+  }
+
+  .topic-reference-group h2 a {
+    color: var(--ink-900);
+    text-decoration: none;
+  }
+
+  .topic-reference-group p:not(.topic-reference-group__meta) {
+    color: var(--ink-700);
+    max-inline-size: var(--w-reading);
+  }
+</style>

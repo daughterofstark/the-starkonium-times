@@ -1,5 +1,6 @@
 ---
 import Container from './Container.astro';
+import ContactBlock from './ContactBlock.astro';
 import Wordmark from './Wordmark.astro';
 import { PRIMARY_NAV_LINKS } from '../lib/shell';
 
@@ -13,7 +14,7 @@ const referenceLinks = [
 ];
 
 const externalLinks = [
-  { href: 'https://github.com/', label: 'GitHub' },
+  { href: 'https://github.com/daughterofstark', label: 'GitHub' },
   { href: '/about#contact', label: 'Contact' },
 ];
 ---
@@ -68,6 +69,9 @@ const externalLinks = [
     <p class="site-footer__meta">
       Code MIT. Content CC BY 4.0. Built with Astro.
     </p>
+    <div class="site-footer__contact">
+      <ContactBlock compact />
+    </div>
   </Container>
 </footer>
 
@@ -127,11 +131,15 @@ const externalLinks = [
     text-underline-offset: 0.22em;
   }
 
-  .site-footer__meta {
+  .site-footer__meta,
+  .site-footer__contact {
     border-block-start: 1px solid var(--rule);
+    padding-block-start: var(--space-4);
+  }
+
+  .site-footer__meta {
     font-family: var(--font-interface);
     letter-spacing: 0.04em;
-    padding-block-start: var(--space-4);
     text-transform: uppercase;
   }
 
@@ -140,7 +148,8 @@ const externalLinks = [
       grid-template-columns: minmax(14rem, 1.3fr) minmax(20rem, 2fr);
     }
 
-    .site-footer__meta {
+    .site-footer__meta,
+    .site-footer__contact {
       grid-column: 1 / -1;
     }
   }
