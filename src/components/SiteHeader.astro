@@ -1,7 +1,6 @@
 ---
 import Container from './Container.astro';
 import MobileMenu from './MobileMenu.astro';
-import SearchTrigger from './SearchTrigger.astro';
 import Wordmark from './Wordmark.astro';
 import { PRIMARY_NAV_LINKS } from '../lib/shell';
 ---
@@ -19,11 +18,6 @@ import { PRIMARY_NAV_LINKS } from '../lib/shell';
       }
     </nav>
     <div class="site-header__actions">
-      <SearchTrigger />
-      <a class="site-header__now" href="/now">
-        <span aria-hidden="true" class="site-header__now-mark"></span>
-        Now
-      </a>
       <MobileMenu />
     </div>
   </Container>

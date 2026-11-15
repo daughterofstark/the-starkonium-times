@@ -1,0 +1,329 @@
+---
+import { getCollection } from 'astro:content';
+
+import ArticleMetadata from '../../components/ArticleMetadata.astro';
+import Container from '../../components/Container.astro';
+import EmptyState from '../../components/EmptyState.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import SectionHeader from '../../components/SectionHeader.astro';
+import WritingRow from '../../components/WritingRow.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import type { ContentEntry } from '../../utils/content';
+import type { ReviewData, WritingData } from '../../utils/content-schemas';
+import {
+  getFeaturedWriting,
+  getWritingFeed,
+  getWritingKindOptions,
+  groupWritingByYear,
+} from '../../utils/writing';
+
+const writing = (await getCollection('writing')) as ContentEntry<WritingData>[];
+const reviews = (await getCollection('reviews')) as ContentEntry<ReviewData>[];
+const feed = getWritingFeed(writing, reviews);
+const featured = getFeaturedWriting(feed, 2);
+const groups = groupWritingByYear(feed);
+const kindOptions = getWritingKindOptions(feed);
+---
+
+<BaseLayout
+  title="Writing — The Starkonium Times"
+  description="Essays, notes, explainers, reviews, and long-form reading from The Starkonium Times."
+>
+  <Container as="section" class="writing-index" aria-label="Writing">
+    <PageHeader
+      eyebrow="Writing"
+      title="Writing"
+      standfirst="Essays, notes, explainers, reviews, and migrated Volume I fixtures in one chronological editorial feed."
+    />
+
+    <form
+      class="writing-filter"
+      data-writing-filter
+      aria-label="Writing kind filter"
+    >
+      <a href="/writing" data-kind-link data-kind="">All</a>
+      {
+        kindOptions.map((option) => (
+          <a
+            href={`/writing?kind=${option.kind}`}
+            data-kind-link
+            data-kind={option.kind}
+          >
+            {option.label}
+          </a>
+        ))
+      }
+    </form>
+
+    {
+      featured.length > 0 && (
+        <section class="writing-featured" aria-labelledby="featured-writing">
+          <SectionHeader id="featured-writing" title="Featured" />
+          <div class="writing-featured__grid">
+            {featured.map((item) => (
+              <article
+                class="writing-featured__item"
+                data-writing-item
+                data-kind={item.kind}
+              >
+                <ArticleMetadata kind={item.label} date={item.date} />
+                <h2>
+                  <a href={item.href}>{item.title}</a>
+                </h2>
+                {item.volume === 'one' && (
+                  <p class="writing-index__volume">Volume I</p>
+                )}
+                <p>{item.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <section class="writing-feed" aria-labelledby="writing-feed">
+      <SectionHeader
+        id="writing-feed"
+        title="Archive"
+        intro="Grouped by year. Filtered by kind only."
+      />
+      <p class="writing-feed__count">
+        <span data-writing-count>{feed.length}</span>
+        <span data-writing-count-label>
+          {feed.length === 1 ? 'entry' : 'entries'}
+        </span>
+      </p>
+      {
+        groups.length > 0 ? (
+          groups.map((group) => (
+            <section
+              class="writing-year"
+              aria-labelledby={`writing-${group.year}`}
+            >
+              <h2 id={`writing-${group.year}`}>{group.year}</h2>
+              <div class="writing-year__items">
+                {group.items.map((item) =>
+                  item.type === 'writing' ? (
+                    <div data-writing-item data-kind={item.kind}>
+                      <WritingRow entry={item.entry} href={item.href} />
+                    </div>
+                  ) : (
+                    <article
+                      class="writing-review-row"
+                      data-writing-item
+                      data-kind="review"
+                    >
+                      <ArticleMetadata kind="Review" date={item.date} />
+                      <h3>
+                        <a href={item.href}>{item.title}</a>
+                      </h3>
+                      <p>{item.description}</p>
+                    </article>
+                  ),
+                )}
+              </div>
+            </section>
+          ))
+        ) : (
+          <EmptyState message="No public writing entries are ready yet." />
+        )
+      }
+      <div class="writing-empty" data-writing-empty hidden>
+        <EmptyState
+          message="No writing entries match that filter."
+          action={{ label: 'Clear filter', href: '/writing' }}
+        />
+      </div>
+    </section>
+  </Container>
+</BaseLayout>
+
+<script is:inline>
+  const filter = document.querySelector('[data-writing-filter]');
+  const links = Array.from(document.querySelectorAll('[data-kind-link]'));
+  const items = Array.from(document.querySelectorAll('[data-writing-item]'));
+  const count = document.querySelector('[data-writing-count]');
+  const countLabel = document.querySelector('[data-writing-count-label]');
+  const empty = document.querySelector('[data-writing-empty]');
+
+  function applyKind(kind) {
+    let visibleCount = 0;
+
+    for (const item of items) {
+      const visible = !kind || item.dataset.kind === kind;
+      item.hidden = !visible;
+      if (visible) visibleCount += 1;
+    }
+
+    for (const link of links) {
+      link.toggleAttribute('aria-current', link.dataset.kind === kind);
+    }
+
+    count.textContent = String(visibleCount);
+    countLabel.textContent = visibleCount === 1 ? 'entry' : 'entries';
+    empty.hidden = visibleCount > 0;
+
+    const url = new URL(window.location.href);
+    if (kind) {
+      url.searchParams.set('kind', kind);
+    } else {
+      url.searchParams.delete('kind');
+    }
+    window.history.replaceState({}, '', url);
+  }
+
+  if (filter && count && countLabel && empty) {
+    filter.addEventListener('click', (event) => {
+      const link = event.target.closest('[data-kind-link]');
+      if (!link) return;
+      event.preventDefault();
+      applyKind(link.dataset.kind ?? '');
+    });
+
+    applyKind(new URLSearchParams(window.location.search).get('kind') ?? '');
+  }
+</script>
+
+<style>
+  .writing-index {
+    display: grid;
+    gap: var(--space-8);
+    padding-block: clamp(var(--space-7), 8vw, var(--space-11));
+  }
+
+  .writing-filter {
+    border-block: 1px solid var(--rule-strong);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    padding-block: var(--space-4);
+  }
+
+  .writing-filter a,
+  .writing-feed__count,
+  .writing-index__volume,
+  .writing-year > h2 {
+    font-family: var(--font-interface);
+    font-size: var(--step--1);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .writing-filter a {
+    color: var(--ink-700);
+    text-decoration: none;
+  }
+
+  .writing-filter a[aria-current] {
+    color: var(--orange-ink);
+  }
+
+  .writing-featured {
+    border-block: 1px solid var(--ink-900);
+    display: grid;
+    gap: var(--space-5);
+    padding-block: var(--space-6);
+  }
+
+  .writing-featured__grid {
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .writing-featured__item {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .writing-featured__item h2,
+  .writing-review-row h3 {
+    font-size: var(--step-2);
+  }
+
+  .writing-featured__item h2 a,
+  .writing-review-row h3 a {
+    color: var(--ink-900);
+    text-decoration: none;
+  }
+
+  .writing-featured__item p,
+  .writing-review-row p {
+    color: var(--ink-700);
+  }
+
+  .writing-index__volume {
+    color: var(--orange-ink);
+  }
+
+  .writing-feed {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .writing-feed__count {
+    color: var(--ink-500);
+  }
+
+  .writing-year {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 7rem minmax(0, 1fr);
+  }
+
+  .writing-year > h2 {
+    color: var(--ink-500);
+    font-weight: 400;
+    padding-block-start: var(--space-5);
+  }
+
+  .writing-year__items {
+    display: grid;
+  }
+
+  .writing-review-row {
+    border-block-end: 1px solid var(--rule);
+    display: grid;
+    gap: var(--space-3);
+    padding-block: var(--space-5);
+  }
+
+  [data-writing-item][hidden],
+  [data-writing-empty][hidden] {
+    display: none;
+  }
+
+  @media (min-width: 82rem) {
+    .writing-year__items [data-writing-item] {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 18rem;
+    }
+
+    .writing-year__items [data-writing-item] :global(.writing-row p:last-child),
+    .writing-review-row p {
+      grid-column: 2;
+      grid-row: 1 / span 3;
+      opacity: 0;
+      transition: opacity 120ms ease;
+    }
+
+    .writing-year__items
+      [data-writing-item]:hover
+      :global(.writing-row p:last-child),
+    .writing-review-row:hover p {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 52rem) {
+    .writing-featured__grid,
+    .writing-year {
+      grid-template-columns: 1fr;
+    }
+
+    .writing-year > h2 {
+      border-block-end: 1px solid var(--rule);
+      padding-block: 0 var(--space-2);
+    }
+  }
+</style>
